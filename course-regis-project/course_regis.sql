@@ -15,26 +15,34 @@ CREATE TABLE users (
   userCreateAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   userUpdateAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT PK_users PRIMARY KEY (userId),
-  CONSTRAINT UQ_googleId UNIQUE (googleId),
   CONSTRAINT UQ_userEmail UNIQUE (userEmail),
   CONSTRAINT UQ_userPhoneNumber UNIQUE (userPhoneNumber)
+);
+
+-- Bảng danh mục khóa học
+CREATE TABLE courseCategories (
+    courseCategoryId VARCHAR(50),
+    courseCategoryName VARCHAR(100) NOT NULL,
+    CONSTRAINT PK_courseCategories PRIMARY KEY (courseCategoryId)
 );
 
 -- Bảng khóa học
 CREATE TABLE courses (
     courseId VARCHAR(50),
     userId VARCHAR(50) NOT NULL,
+    courseCategoryId VARCHAR(50),
     courseName VARCHAR(255) NOT NULL,
     courseDescription TEXT,
     courseStartDate DATE,
     courseEndDate DATE,
-    courseMaxStudent INT,
-    coursePrice DECIMAL(10),
+    courseMaxStudent SMALLINT,
+    coursePrice DECIMAL(10, 2),
     courseStatus VARCHAR(50),
     courseCreateAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     courseUpdateAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT PK_courses PRIMARY KEY (courseId),
-    CONSTRAINT FK_courses_userId FOREIGN KEY (userId) REFERENCES users(userId)
+    CONSTRAINT FK_courses_userId FOREIGN KEY (userId) REFERENCES users(userId),
+    CONSTRAINT FK_courses_courseCategoryId FOREIGN KEY (courseCategoryId) REFERENCES courseCategories(courseCategoryId) ON DELETE SET NULL
 );
 
 -- Bảng đăng ký khóa học
