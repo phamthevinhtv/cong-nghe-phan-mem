@@ -25,13 +25,7 @@ const RadioGroup = ({ name, options, value, onChange, gap, direction, margin, ..
     <RadioGroupContainer gap={gap} direction={direction} margin={margin} {...props}>
       {options.map((option) => (
         <RadioLabel key={option.value}>
-          <RadioInput
-            type="radio"
-            name={name}
-            value={option.value}
-            checked={value === option.value}
-            onChange={onChange}
-          />
+          <RadioInput type="radio" name={name} value={option.value} checked={value === option.value} onChange={onChange} {...props}/>
           {option.label}
         </RadioLabel>
       ))}
