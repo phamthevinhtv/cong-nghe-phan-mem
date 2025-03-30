@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  api:
+    image: pthevinh/course-regis-api:latest
+    container_name: course-regis-api
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./api/.env
+    depends_on:
+      - mysql
+    networks:
+      - app-network
+
+  solution:
+    image: pthevinh/course-regis-solution:latest
+    container_name: course-regis-solution
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    networks:
+      - app-network
+
+  mysql:
+    image: pthevinh/course-regis-mysql:latest
+    container_name: course-regis-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: course_regis
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    networks:
+      - app-network
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  adminer:
+    image: adminer
+    container_name: course-regis-adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local
