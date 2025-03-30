@@ -18,13 +18,7 @@ const StyledButton = styled.button`
 
 const Button = ({ children, onClick, backgroundColor, width, margin, ...props }) => {
   return (
-    <StyledButton
-      onClick={onClick}
-      backgroundColor={backgroundColor}  
-      width={width}
-      margin={margin}
-      {...props}
-    >
+    <StyledButton onClick={onClick} backgroundColor={backgroundColor}   width={width} margin={margin} {...props}>
       {children}
     </StyledButton>
   );

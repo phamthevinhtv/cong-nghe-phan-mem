@@ -17,16 +17,9 @@ const StyledInput = styled.input`
   }
 `;
 
-const Input = ({ value, onChange, placeholder, width, margin, ...props }) => {
+const Input = ({ value, type = 'text', name, onChange, onBlur, placeholder, width, margin, ...props }) => {
   return (
-    <StyledInput
-      value={value}
-      onChange={onChange}
-      placeholder={placeholder}
-      width={width}
-      margin={margin}
-      {...props}
-    />
+    <StyledInput name={name} value={value} onChange={onChange} onBlur={onBlur} placeholder={placeholder} width={width} type={type} margin={margin} {...props}/>
   );
 };
 
