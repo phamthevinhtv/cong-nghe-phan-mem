@@ -80,6 +80,10 @@ const Login = () => {
     }
   };
 
+  const handleGoogleLogin = () => {
+    window.location.href = 'http://localhost:5000/api/auth/google';
+  };
+
   return (
     <Wrapper>
       <Container>
@@ -97,7 +101,7 @@ const Login = () => {
             {waitLogin ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </Button>
         </form>
-        <Button margin="12px 0 0 0" backgroundColor="var(--success-color)">
+        <Button margin="12px 0 0 0" backgroundColor="var(--success-color)" onClick={handleGoogleLogin}>
           Tiếp tục với Google
         </Button>
         <LabelQuestion margin="12px 0 0 0" direction="row" gap="4px" justifyContent="center">

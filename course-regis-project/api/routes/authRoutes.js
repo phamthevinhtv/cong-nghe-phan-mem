@@ -150,4 +150,7 @@ router.post('/request-reset-password', authController.requestResetPassword);
  */
 router.post('/reset-password', authController.resetPassword);
 
+router.get('/google', authController.googleLoginInit);
+router.get('/google/callback', authController.googleLoginCallback);
+
 module.exports = router;

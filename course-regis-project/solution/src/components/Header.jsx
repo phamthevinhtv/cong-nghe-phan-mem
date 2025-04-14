@@ -92,7 +92,7 @@ const BurgerMenu = styled.div`
     bottom: 0;
     width: 300px;
     background-color: var(--white-color);
-    transform: ${({ isOpen }) => isOpen ? 'translateX(0)' : 'translateX(100%)'};
+    transform: ${({ $isOpen }) => $isOpen ? 'translateX(0)' : 'translateX(100%)'};
     transition: transform 0.1s linear;
     z-index: 11;
     padding: 15px 24px;
@@ -303,7 +303,7 @@ const Header = () => {
                 <BurgerIcon src={burgerIcon} onClick={() => setMenuOpen(true)} />
             </Container>
             {menuOpen && <Overlay onClick={() => setMenuOpen(false)} />}
-            <BurgerMenu isOpen={menuOpen}>
+            <BurgerMenu $isOpen={menuOpen}>
                 <BurgerMenuHeader>
                     <Logo style={{ width: '70px' }} src={logo} onClick={() => navigate('/home')} />
                     <CloseIcon src={closeIcon} onClick={() => setMenuOpen(false)} />
