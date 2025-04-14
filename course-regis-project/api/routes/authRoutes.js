@@ -84,4 +84,70 @@ router.post('/register', authController.register);
  */
 router.post('/login', authController.login);
 
+/**
+ * @swagger
+ * /api/auth/request-reset-password:
+ *   post:
+ *     summary: Gửi mã OTP yêu cầu đặt lại mật khẩu
+ *     tags:
+ *       - Xác thực
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userEmail
+ *             properties:
+ *               userEmail:
+ *                 type: string
+ *                 example: "example@fake.com"
+ *     responses:
+ *       200:
+ *         description: Mã OTP đã được gửi đến email
+ *       400:
+ *         description: Email không tồn tại
+ *       500:
+ *         description: Yêu cầu đặt lại mật khẩu thất bại
+ */
+router.post('/request-reset-password', authController.requestResetPassword);
+
+/**
+ * @swagger
+ * /api/auth/reset-password:
+ *   post:
+ *     summary: Đặt lại mật khẩu với mã OTP
+ *     tags:
+ *       - Xác thực
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userEmail
+ *               - userOtp
+ *               - userPassword
+ *             properties:
+ *               userEmail:
+ *                 type: string
+ *                 example: "example@fake.com"
+ *               userOtp:
+ *                 type: string
+ *                 example: "nQGH1y"
+ *               userPassword:
+ *                 type: string
+ *                 example: "123456"
+ *     responses:
+ *       200:
+ *         description: Đổi mật khẩu thành công
+ *       400:
+ *         description: Mã OTP không hợp lệ hoặc đã hết hạn
+ *       500:
+ *         description: Đổi mật khẩu thất bại
+ */
+router.post('/reset-password', authController.resetPassword);
+
 module.exports = router;
