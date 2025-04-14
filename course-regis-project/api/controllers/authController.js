@@ -1,4 +1,4 @@
-const { findUserByEmail, createUser } = require('../models/userModel');
+const { findUserByEmail, createUser, updateGoogleId, createUserWithGoogle } = require('../models/userModel');
 const { updateOtp, updatePassword } = require('../models/authModel');
 const sendEmail = require('../utils/sendMail');
 const nanoid = require('nanoid').nanoid;
