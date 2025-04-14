@@ -17,6 +17,7 @@ describe('Kiểm thử chức năng đăng ký tài khoản', () => {
 
     let req;
     let res;
+
     beforeEach(() => {
         req = { body: mockUserData };
         res = {
@@ -67,7 +68,7 @@ describe('Kiểm thử chức năng đăng ký tài khoản', () => {
         expect(sendMail).not.toHaveBeenCalled();
         expect(res.status).toHaveBeenCalledWith(500);
         expect(res.json).toHaveBeenCalledWith({
-            message: 'Đăng ký tài khoản thất bại: Lỗi cơ sở dữ liệu',
+            message: 'Đăng ký tài khoản thất bại.',
         });
     });
 
@@ -83,7 +84,7 @@ describe('Kiểm thử chức năng đăng ký tài khoản', () => {
         expect(sendMail).toHaveBeenCalled();
         expect(res.status).toHaveBeenCalledWith(500);
         expect(res.json).toHaveBeenCalledWith({
-            message: 'Đăng ký tài khoản thất bại: Lỗi gửi email',
+            message: 'Đăng ký tài khoản thất bại.',
         });
     });
 });

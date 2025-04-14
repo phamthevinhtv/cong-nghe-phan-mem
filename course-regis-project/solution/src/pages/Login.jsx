@@ -7,7 +7,6 @@ import Button from '../components/Button';
 import Input from '../components/Input';
 import Label from '../components/Label';
 import Link from '../components/Link';
-import RadioGroup from '../components/RadioGroup';
 
 const Wrapper = styled.div`
   width: 100%;
@@ -30,21 +29,6 @@ const H2 = styled.h2`
   margin-bottom: 24px;
 `;
 
-const RadioGroupGender = styled(RadioGroup)`
-  @media (max-width: 406px) {
-    flex-direction: column;
-    gap: 2px;
-  }
-`;
-
-const LabelGender = styled(Label)`
-  @media (max-width: 406px) {
-    flex-direction: column;
-    gap: 2px;
-    align-items: baseline;
-  }
-`;
-
 const LabelQuestion = styled(Label)`
   @media (max-width: 342px) {
     flex-direction: column;
@@ -54,18 +38,14 @@ const LabelQuestion = styled(Label)`
   }
 `;
 
-const Register = () => {
+const Login = () => {
   const [form, setForm] = useState({
-    userFullName: '',
     userEmail: '',
     userPassword: '',
-    userGender: '',
-    userPhoneNumber: '',
-    userAddress: '',
   });
 
   const navigate = useNavigate();
-  const [waitRegister, setWaitRegister] = useState(false); 
+  const [waitLogin, setWaitLogin] = useState(false); 
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -84,22 +64,19 @@ const Register = () => {
       toast.warning('Email không hợp lệ.', { position: 'top-right', autoClose: 3000 });
       return;
     }
-    if (!/^(?:\+84[3|5|7|8|9][0-9]{8}|0[3|5|7|8|9][0-9]{8})$/.test(form.userPhoneNumber)) {
-      toast.warning('Số điện thoại không hợp lệ.', { position: 'top-right', autoClose: 3000 });
-      return;
-    }
     if (form.userPassword.length < 6) {
       toast.warning('Mật khẩu phải có ít nhất 6 ký tự.', { position: 'top-right', autoClose: 3000 });
       return;
     }
-    setWaitRegister(true);
+    setWaitLogin(true);
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/register', form);
+      const response = await axios.post('http://localhost:5000/api/auth/login', form, { withCredentials: true });
       toast.success(response.data.message, { position: 'top-right', autoClose: 3000 });
+      navigate('/home');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Lỗi máy chủ.', { position: 'top-right', autoClose: 3000 });
     } finally {
-      setWaitRegister(false);
+      setWaitLogin(false);
     }
   };
 
@@ -107,51 +84,33 @@ const Register = () => {
     <Wrapper>
       <Container>
         <form onSubmit={handleSubmit}>
-          <H2>Đăng ký</H2>
+          <H2>Đăng nhập</H2>
           <Label gap="2px" margin="0 0 12px 0">
             Địa chỉ email:
             <Input name="userEmail" value={form.userEmail} onChange={handleChange} type="email" placeholder="Nhập địa chỉ email" required />
           </Label>
           <Label gap="2px" margin="0 0 12px 0">
-            Họ và tên:
-            <Input name="userFullName" value={form.userFullName} onChange={handleChange} placeholder="Nhập họ và tên" required />
-          </Label>
-          <LabelGender margin="0 0 12px 0" direction="row" gap="24px" alignItem="center">
-            Giới tính:
-            <RadioGroupGender name="userGender" value={form.userGender} onChange={handleChange} gap="24px" direction="row"
-              options={[
-                { value: 'Nam', label: 'Nam' },
-                { value: 'Nữ', label: 'Nữ' },
-                { value: 'Khác', label: 'Khác' },
-              ]}
-              required/>
-          </LabelGender>
-          <Label gap="2px" margin="0 0 12px 0">
-            Số điện thoại:
-            <Input name="userPhoneNumber" value={form.userPhoneNumber} onChange={handleChange} placeholder="Nhập số điện thoại" required />
-          </Label>
-          <Label gap="2px" margin="0 0 12px 0">
-            Địa chỉ:
-            <Input name="userAddress" value={form.userAddress} onChange={handleChange} placeholder="Nhập địa chỉ" required />
-          </Label>
-          <Label gap="2px" margin="0 0 12px 0">
             Mật khẩu:
             <Input name="userPassword" value={form.userPassword} onChange={handleChange} type="password" placeholder="Nhập mật khẩu" required />
           </Label>
-          <Button margin="12px 0 0 0" disabled={waitRegister} onClick={handleSubmit}>
-            {waitRegister ? 'Đang đăng ký...' : 'Đăng ký'}
+          <Button margin="12px 0 0 0" disabled={waitLogin} onClick={handleSubmit}>
+            {waitLogin ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </Button>
         </form>
         <Button margin="12px 0 0 0" backgroundColor="var(--success-color)">
           Tiếp tục với Google
         </Button>
         <LabelQuestion margin="12px 0 0 0" direction="row" gap="4px" justifyContent="center">
-          Bạn đã có tài khoản?
-          <Link to="/login" hoverUnderline="true" color='var(--primary-color)'>Đăng nhập</Link>
+          Bạn chưa có tài khoản?
+          <Link to="/register" color='var(--primary-color)' hoverUnderline="true">Đăng ký</Link>
+        </LabelQuestion>
+        <LabelQuestion margin="6px 0 0 0" direction="row" gap="4px" justifyContent="center">
+          Bạn quên mật khẩu?
+          <Link to="/forgot-password" color='var(--primary-color)' hoverUnderline="true">Đặt lại</Link>
         </LabelQuestion>
       </Container>
     </Wrapper>
   );
 };
 
-export default Register;
+export default Login;

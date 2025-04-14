@@ -7,6 +7,7 @@
   --warning-color: #ffc107;
   --white-color: #ffffff;
   --black-color: #000000;
+  --text-color: #282828;
 }
 
 *,
@@ -16,13 +17,14 @@
   padding: 0;
   box-sizing: inherit;
   font-size: inherit;
+  max-width: 100%;
 }
 
 html {
   box-sizing: border-box;
   font-family: "Roboto", sans-serif;
   font-size: 62.5%;
-  color: var(--black-color);
+  color: var(--text-color);
 }
 
 body {

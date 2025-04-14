@@ -1,21 +1,24 @@
-import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 
-const Link = styled.a`
-  color: ${(props) => props.color || 'var(--primary-color)'};
+const LinkStyled = styled.a`
+  color: ${(props) => props.color};
   text-decoration: ${(props) => props.underline ? 'underline' : 'none'};
   cursor: pointer;
 
   &:hover {
     text-decoration: ${(props) => props.hoverUnderline ? 'underline' : 'none'};
+    color: ${(props) => props.hoverColor};
   }
 `;
 
-const Input = ({ to, color, hoverUnderline, underline, ...props }) => {
-    const navigate = useNavigate();
-    return (
-    <Link color={color} hoverUnderline={hoverUnderline} underline={underline} onClick={() => navigate(to)} {...props}/>
+const Link = ({ children, to, color, hoverColor, hoverUnderline, underline, ...props }) => {
+  const navigate = useNavigate();
+  return (
+    <LinkStyled color={color} hoverColor={hoverColor} hoverUnderline={hoverUnderline} underline={underline} onClick={() => navigate(to)} {...props}>
+      {children}
+    </LinkStyled>
   );
 };
 
-export default Input;
+export default Link;

@@ -8,7 +8,7 @@ const StyledButton = styled.button`
   border-color: ${(props) => props.backgroundColor || 'var(--primary-color)'};
   background-color: ${(props) => props.backgroundColor || 'var(--primary-color)'}; 
   width: ${(props) => props.width || '100%'};
-  margin: ${(props) => props.margin || '0px 0px 0px 0px'};
+  margin: ${(props) => props.margin};
   color: white;
 
   &:hover {
@@ -16,9 +16,9 @@ const StyledButton = styled.button`
   }
 `;
 
-const Button = ({ children, onClick, backgroundColor, width, margin, ...props }) => {
+const Button = ({ children, type, onClick, backgroundColor, width, margin, ...props }) => {
   return (
-    <StyledButton onClick={onClick} backgroundColor={backgroundColor}   width={width} margin={margin} {...props}>
+    <StyledButton type={type} onClick={onClick} backgroundColor={backgroundColor} width={width} margin={margin} {...props}>
       {children}
     </StyledButton>
   );

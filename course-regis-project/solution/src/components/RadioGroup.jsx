@@ -3,8 +3,8 @@ import styled from 'styled-components';
 const RadioGroupContainer = styled.div`
   display: flex;
   flex-direction: ${(props) => props.direction || 'column'};
-  gap: ${(props) => props.gap || '0px'}; 
-  margin: ${(props) => props.margin || '0px 0px 0px 0px'};
+  gap: ${(props) => props.gap}; 
+  margin: ${(props) => props.margin};
 `;
 
 const RadioLabel = styled.label`
@@ -21,7 +21,7 @@ const RadioInput = styled.input`
 
 const RadioGroup = ({ name, options, value, onChange, gap, direction, margin, ...props }) => {
     
-    return (
+  return (
     <RadioGroupContainer gap={gap} direction={direction} margin={margin} {...props}>
       {options.map((option) => (
         <RadioLabel key={option.value}>
