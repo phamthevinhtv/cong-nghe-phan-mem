@@ -88,9 +88,94 @@ const resetPassword = async (req, res) => {
     }
 };
 
+const { OAuth2Client } = require('google-auth-library');
+const client = new OAuth2Client({
+  clientId: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  redirectUri: process.env.GOOGLE_REDIRECT_URI
+});
+
+const googleLoginInit = (req, res) => {
+    const authUrl = client.generateAuthUrl({
+        access_type: 'offline',
+        scope: ['profile', 'email'],
+        redirect_uri: process.env.GOOGLE_REDIRECT_URI
+    });
+    res.redirect(authUrl);
+};
+  
+const googleLoginCallback = async (req, res) => {
+    const code = req.query.code;
+    try {
+        const { tokens } = await client.getToken(code);
+        client.setCredentials(tokens);
+        const ticket = await client.verifyIdToken({
+            idToken: tokens.id_token,
+            audience: process.env.GOOGLE_CLIENT_ID
+        });
+        const payload = ticket.getPayload();
+        const email = payload['email'];
+        const googleId = payload['sub'];
+        const fullName = payload['name'];
+
+        const user = await findUserByEmail(email);
+        if (user) {
+            if (user.googleId) {
+                req.session.user = {
+                    userId: user.userId,
+                    userEmail: user.userEmail,
+                    userFullName: user.userFullName,
+                    userRole: user.userRole,
+                    userStatus: user.userStatus
+                };
+                return res.redirect('http://localhost:3000/home');
+            } else {
+                await updateGoogleId(user.userId, googleId);
+                req.session.user = {
+                    userId: user.userId,
+                    userEmail: user.userEmail,
+                    userFullName: user.userFullName,
+                    userRole: user.userRole,
+                    userStatus: user.userStatus
+                };
+                const subject = 'Liên kết Google thành công';
+                const text = `Xin chào ${user.userFullName},\n\nTài khoản của bạn đã được liên kết với Google ID: ${googleId} vào lúc ${new Date().toLocaleString()}.\n\nTrân trọng!`;
+                await sendEmail(user.userEmail, subject, text);
+                return res.redirect('http://localhost:3000/home');
+            }
+        } else {
+            const newUserData = {
+                userFullName: fullName,
+                userEmail: email,
+                userRole: 'Student',
+                userStatus: 'Active',
+                googleId: googleId
+            };
+            await createUserWithGoogle(newUserData);
+            const newUser = await findUserByEmail(email); 
+            req.session.user = {
+                userId: newUser.userId,
+                userEmail: newUser.userEmail,
+                userFullName: newUser.userFullName,
+                userRole: newUser.userRole,
+                userStatus: newUser.userStatus
+            };
+            const subject = 'Đăng ký bằng Google thành công';
+            const text = `Xin chào ${newUser.userFullName},\n\nBạn đã đăng ký thành công tài khoản bằng Google với email: ${newUser.userEmail} vào lúc ${new Date().toLocaleString()}.\n\nTrân trọng!`;
+            await sendEmail(newUser.userEmail, subject, text);
+            return res.redirect('http://localhost:3000/home');
+        }
+    } catch (err) {
+        res.status(500).json({ message: 'Lỗi xác thực Google.' });
+        console.log(`Lỗi: ${err.message}`);
+    }
+};
+
 module.exports = {
     register,
     login,
     requestResetPassword,
-    resetPassword
+    resetPassword,
+    googleLoginInit,
+    googleLoginCallback
 }
