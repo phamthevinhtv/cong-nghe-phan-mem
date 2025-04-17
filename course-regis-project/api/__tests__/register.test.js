@@ -28,9 +28,9 @@ describe('Kiểm thử chức năng đăng ký tài khoản', () => {
     });
 
     it('Phải đăng ký thành công khi email chưa tồn tại', async () => {
-        userModel.findUserByEmail.mockResolvedValue(null);
-        userModel.createUser.mockResolvedValue();
-        sendMail.mockResolvedValue();
+        userModel.findUserByEmail.mockResolvedValue(null);  
+        userModel.createUser.mockResolvedValue();  
+        sendMail.mockResolvedValue();  
 
         await register(req, res);
 
@@ -46,26 +46,26 @@ describe('Kiểm thử chức năng đăng ký tài khoản', () => {
     });
 
     it('Phải trả về lỗi khi email đã tồn tại', async () => {
-        userModel.findUserByEmail.mockResolvedValue({ userEmail: mockUserData.userEmail });
+        userModel.findUserByEmail.mockResolvedValue({ userEmail: mockUserData.userEmail }); 
 
         await register(req, res);
 
         expect(userModel.findUserByEmail).toHaveBeenCalledWith(mockUserData.userEmail);
         expect(userModel.createUser).not.toHaveBeenCalled();
         expect(sendMail).not.toHaveBeenCalled();
-        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.status).toHaveBeenCalledWith(409);
         expect(res.json).toHaveBeenCalledWith({ message: 'Email đã tồn tại.' });
     });
 
     it('Phải trả về lỗi khi tạo user thất bại', async () => {
-        userModel.findUserByEmail.mockResolvedValue(null);
-        userModel.createUser.mockRejectedValue(new Error('Lỗi cơ sở dữ liệu'));
+        userModel.findUserByEmail.mockResolvedValue(null); 
+        userModel.createUser.mockRejectedValue(new Error('Lỗi cơ sở dữ liệu'));  
 
         await register(req, res);
 
         expect(userModel.findUserByEmail).toHaveBeenCalledWith(mockUserData.userEmail);
         expect(userModel.createUser).toHaveBeenCalledWith(mockUserData);
-        expect(sendMail).not.toHaveBeenCalled();
+        expect(sendMail).not.toHaveBeenCalled();  
         expect(res.status).toHaveBeenCalledWith(500);
         expect(res.json).toHaveBeenCalledWith({
             message: 'Đăng ký tài khoản thất bại.',
@@ -73,8 +73,8 @@ describe('Kiểm thử chức năng đăng ký tài khoản', () => {
     });
 
     it('Phải trả về lỗi khi gửi email thất bại', async () => {
-        userModel.findUserByEmail.mockResolvedValue(null);
-        userModel.createUser.mockResolvedValue();
+        userModel.findUserByEmail.mockResolvedValue(null);  
+        userModel.createUser.mockResolvedValue();  
         sendMail.mockRejectedValue(new Error('Lỗi gửi email'));
 
         await register(req, res);
@@ -83,6 +83,17 @@ describe('Kiểm thử chức năng đăng ký tài khoản', () => {
         expect(userModel.createUser).toHaveBeenCalledWith(mockUserData);
         expect(sendMail).toHaveBeenCalled();
         expect(res.status).toHaveBeenCalledWith(500);
+        expect(res.json).toHaveBeenCalledWith({
+            message: 'Đăng ký tài khoản thất bại.',
+        });
+    });
+
+    it('Phải trả về lỗi khi không có thông tin trong body', async () => {
+        req.body = {};  
+
+        await register(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(500); 
         expect(res.json).toHaveBeenCalledWith({
             message: 'Đăng ký tài khoản thất bại.',
         });
