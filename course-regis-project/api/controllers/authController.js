@@ -1,4 +1,4 @@
-const { findUserByEmail, createUser } = require('../models/userModel');
+const { findUserByEmail, createUser, updateGoogleId, createUserWithGoogle } = require('../models/userModel');
 const { updateOtp, updatePassword } = require('../models/authModel');
 const sendEmail = require('../utils/sendMail');
 const nanoid = require('nanoid').nanoid;
@@ -10,7 +10,7 @@ const register = async (req, res) => {
     try {
         const user = await findUserByEmail(userData.userEmail);
         if (user) {
-            return res.status(400).json({ message: 'Email đã tồn tại.' });
+            return res.status(409).json({ message: 'Email đã tồn tại.' });
         }
         await createUser(userData);
         const subject = registerSuccess;
@@ -18,8 +18,8 @@ const register = async (req, res) => {
         await sendEmail(userData.userEmail, subject, text);
         res.status(201).json({ message: registerSuccess });
     } catch (err) {
-        res.status(500).json({ message: 'Đăng ký tài khoản thất bại.'});
-        console.log(`Lỗi: ${err.message}`);
+        res.status(500).json({ message: 'Đăng ký tài khoản thất bại.' });
+        console.error(`Lỗi: ${err.message}`);
     }
 };
 
@@ -28,22 +28,26 @@ const login = async (req, res) => {
     try {
         const user = await findUserByEmail(userEmail);
         if (!user) {
-            return res.status(400).json({ message: 'Email không tồn tại.' });
+            return res.status(404).json({ message: 'Email không tồn tại.' });
+        }
+        if (user.userStatus != "Active") {
+            return res.status(403).json({ message: 'Tài khoản này đã bị khóa.' });
         }
         const isPasswordValid = await bcrypt.compare(userPassword, user.userPassword);
         if (!isPasswordValid) {
-            return res.status(400).json({ message: 'Sai mật khẩu.' });
+            return res.status(401).json({ message: 'Sai mật khẩu.' });
         }
         req.session.user = {
             userId: user.userId,
             userEmail: user.userEmail,
             userFullName: user.userFullName,
-            userRole: user.userRole
+            userRole: user.userRole,
+            userStatus: user.userStatus
         };
         res.status(200).json({ message: 'Đăng nhập thành công.', user: req.session.user });
     } catch (err) {
-        res.status(500).json({ message: `Đăng nhập thất bại.` });
-        console.log(`Lỗi: ${err.message}`);
+        res.status(500).json({ message: 'Đăng nhập thất bại.' });
+        console.error(`Lỗi: ${err.message}`);
     }
 };
 
@@ -52,7 +56,7 @@ const requestResetPassword = async (req, res) => {
     try {
         const user = await findUserByEmail(userEmail);
         if (!user) {
-            return res.status(400).json({ message: 'Email không tồn tại.' });
+            return res.status(404).json({ message: 'Email không tồn tại.' });
         }
         const userOtp = nanoid(6);
         const expire = new Date(Date.now() + 10 * 60 * 1000);
@@ -63,7 +67,7 @@ const requestResetPassword = async (req, res) => {
         res.status(200).json({ message: 'Mã OTP đã được gửi đến email của bạn.' });
     } catch (err) {
         res.status(500).json({ message: 'Yêu cầu đặt lại mật khẩu thất bại.' });
-        console.log(`Lỗi: ${err.message}`);
+        console.error(`Lỗi: ${err.message}`);
     }
 };
 
@@ -72,7 +76,7 @@ const resetPassword = async (req, res) => {
     try {
         const user = await findUserByEmail(userEmail);
         if (!user) {
-            return res.status(400).json({ message: 'Email không tồn tại.' });
+            return res.status(404).json({ message: 'Email không tồn tại.' });
         }
         if (user.userOtp !== userOtp || new Date() > new Date(user.userOtpExpire)) {
             return res.status(400).json({ message: 'Mã OTP không hợp lệ hoặc đã hết hạn.' });
@@ -84,15 +88,15 @@ const resetPassword = async (req, res) => {
         res.status(200).json({ message: 'Đổi mật khẩu thành công.' });
     } catch (err) {
         res.status(500).json({ message: 'Đổi mật khẩu thất bại.' });
-        console.log(`Lỗi: ${err.message}`);
+        console.error(`Lỗi: ${err.message}`);
     }
 };
 
 const { OAuth2Client } = require('google-auth-library');
 const client = new OAuth2Client({
-  clientId: process.env.GOOGLE_CLIENT_ID,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  redirectUri: process.env.GOOGLE_REDIRECT_URI
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    redirectUri: process.env.GOOGLE_REDIRECT_URI
 });
 
 const googleLoginInit = (req, res) => {
@@ -103,7 +107,7 @@ const googleLoginInit = (req, res) => {
     });
     res.redirect(authUrl);
 };
-  
+
 const googleLoginCallback = async (req, res) => {
     const code = req.query.code;
     try {
@@ -152,7 +156,7 @@ const googleLoginCallback = async (req, res) => {
                 googleId: googleId
             };
             await createUserWithGoogle(newUserData);
-            const newUser = await findUserByEmail(email); 
+            const newUser = await findUserByEmail(email);
             req.session.user = {
                 userId: newUser.userId,
                 userEmail: newUser.userEmail,
@@ -167,8 +171,27 @@ const googleLoginCallback = async (req, res) => {
         }
     } catch (err) {
         res.status(500).json({ message: 'Lỗi xác thực Google.' });
-        console.log(`Lỗi: ${err.message}`);
+        console.error(`Lỗi: ${err.message}`);
     }
+};
+
+const checkSession = (req, res) => {
+    if (req.session && req.session.user) {
+        res.status(200).json({ loggedIn: true, user: req.session.user });
+    } else {
+        res.status(200).json({ loggedIn: false });
+    }
+};
+
+const logout = (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Lỗi khi logout:', err);
+            return res.status(500).json({ message: 'Đăng xuất thất bại.' });
+        }
+        res.clearCookie('connect.sid'); 
+        res.status(200).json({ message: 'Đăng xuất thành công.' });
+    });
 };
 
 module.exports = {
@@ -177,5 +200,7 @@ module.exports = {
     requestResetPassword,
     resetPassword,
     googleLoginInit,
-    googleLoginCallback
-}
+    googleLoginCallback,
+    checkSession,
+    logout
+};

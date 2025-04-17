@@ -34,6 +34,20 @@ const findUserByEmail = async(email) => {
     }
 };
 
+const findUserById = async(userId) => {
+    let connection;
+    try {
+        connection = await getConnection();
+        const query = 'SELECT * FROM users WHERE userId = ?';
+        const [rows] = await connection.query(query, [userId]);
+        return rows.length > 0 ? rows[0] : null;
+    } catch (err) {
+        throw err;
+    } finally {
+        await closeConnection(connection);
+    }
+};
+
 const createUserWithGoogle = async(userData) => {
     let connection;
     try {
@@ -66,9 +80,27 @@ const updateGoogleId = async (userId, googleId) => {
     }
 };
 
+const updateUserDB = async(userId, userData) => {
+    let connection;
+    try {
+        connection = await getConnection();
+        const { userFullName, userEmail, userPassword, userGender, userPhoneNumber, userAddress, userRole, userStatus } = userData;
+        const query = 'UPDATE users SET userFullName = ?, userEmail = ?, userPassword = ?, userGender = ?, userPhoneNumber = ?, userAddress = ?, userRole = ?, userStatus = ? WHERE userId = ?';
+        const values = [userFullName, userEmail, userPassword, userGender, userPhoneNumber, userAddress, userRole || 'Student', userStatus || 'Active', userId];
+        const [result] = await connection.query(query, values);
+        return result;
+    } catch (err) {
+        throw err;
+    } finally {
+        await closeConnection(connection);
+    }
+};
+
 module.exports = {
     createUser,
     findUserByEmail,
     createUserWithGoogle,
-    updateGoogleId
+    updateGoogleId,
+    findUserById,
+    updateUserDB
 }
