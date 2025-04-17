@@ -6,6 +6,7 @@ const PORT = process.env.PORT || 5000;
 require('dotenv').config();
 const swaggerDocs = require('./config/swagger');
 const authRoutes = require('./routes/authRoutes')
+const userRoutes = require('./routes/userRoutes')
 
 app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(express.json());
@@ -24,6 +25,7 @@ app.use(session({
 swaggerDocs(app);
 
 app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
 
 app.listen(PORT, (err) => {
     if (err) {

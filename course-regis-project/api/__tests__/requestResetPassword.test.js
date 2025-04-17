@@ -50,7 +50,7 @@ describe('Kiểm thử chức năng yêu cầu đặt lại mật khẩu', () =>
         );
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.json).toHaveBeenCalledWith({
-            message: 'Mã OTP đã được gửi đến email của bạn.'
+            message: 'Mã OTP đã được gửi đến email của bạn.' 
         });
     });
 
@@ -62,7 +62,7 @@ describe('Kiểm thử chức năng yêu cầu đặt lại mật khẩu', () =>
         expect(userModel.findUserByEmail).toHaveBeenCalledWith(mockUser.userEmail);
         expect(authModel.updateOtp).not.toHaveBeenCalled();
         expect(sendMail).not.toHaveBeenCalled();
-        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.status).toHaveBeenCalledWith(404);
         expect(res.json).toHaveBeenCalledWith({
             message: 'Email không tồn tại.'
         });

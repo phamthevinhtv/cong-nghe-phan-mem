@@ -73,28 +73,37 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const emptyFields = Object.entries(form)
-    .filter(([key, value]) => !value.trim())
+    const trimmedForm = {
+      ...form,
+      userFullName: form.userFullName.trim(),
+      userEmail: form.userEmail.trim(),
+      userPassword: form.userPassword.trim(),
+      userGender: form.userGender.trim(),
+      userPhoneNumber: form.userPhoneNumber.trim(),
+      userAddress: form.userAddress.trim(),
+    };
+    const emptyFields = Object.entries(trimmedForm)
+    .filter(([key, value]) => !value)
     .map(([key]) => key);
     if (emptyFields.length > 0) {
       toast.warning('Vui lòng nhập đầy đủ thông tin.', { position: 'top-right', autoClose: 3000 });
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.userEmail)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedForm.userEmail)) {
       toast.warning('Email không hợp lệ.', { position: 'top-right', autoClose: 3000 });
       return;
     }
-    if (!/^(?:\+84[3|5|7|8|9][0-9]{8}|0[3|5|7|8|9][0-9]{8})$/.test(form.userPhoneNumber)) {
+    if (!/^(?:\+84[3|5|7|8|9][0-9]{8}|0[3|5|7|8|9][0-9]{8})$/.test(trimmedForm.userPhoneNumber)) {
       toast.warning('Số điện thoại không hợp lệ.', { position: 'top-right', autoClose: 3000 });
       return;
     }
-    if (form.userPassword.length < 6) {
+    if (trimmedForm.userPassword.length < 6) {
       toast.warning('Mật khẩu phải có ít nhất 6 ký tự.', { position: 'top-right', autoClose: 3000 });
       return;
     }
     setWaitRegister(true);
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/register', form);
+      const response = await axios.post('http://localhost:5000/api/auth/register', trimmedForm);
       toast.success(response.data.message, { position: 'top-right', autoClose: 3000 });
     } catch (error) {
       toast.error(error.response?.data?.message || 'Lỗi máy chủ.', { position: 'top-right', autoClose: 3000 });

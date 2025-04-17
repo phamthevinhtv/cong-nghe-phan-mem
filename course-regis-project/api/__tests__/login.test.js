@@ -11,7 +11,8 @@ describe('Kiểm thử chức năng đăng nhập', () => {
         userFullName: 'Nguyễn Văn A',
         userEmail: 'example@fake.com',
         userPassword: '$2b$10$oCUAJBj9IkvaC6J1cYtaXeCUcprhlhQau6w7KenS26dqwgiaeyhOW',
-        userRole: 'Student'
+        userRole: 'Student',
+        userStatus: 'Active'
     };
 
     const reqBody = {
@@ -46,7 +47,8 @@ describe('Kiểm thử chức năng đăng nhập', () => {
             userId: mockUserData.userId,
             userEmail: mockUserData.userEmail,
             userFullName: mockUserData.userFullName,
-            userRole: mockUserData.userRole
+            userRole: mockUserData.userRole,
+            userStatus: mockUserData.userStatus,
         });
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.json).toHaveBeenCalledWith({
@@ -62,7 +64,7 @@ describe('Kiểm thử chức năng đăng nhập', () => {
 
         expect(userModel.findUserByEmail).toHaveBeenCalledWith(reqBody.userEmail);
         expect(bcrypt.compare).not.toHaveBeenCalled();
-        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.status).toHaveBeenCalledWith(404);
         expect(res.json).toHaveBeenCalledWith({ message: 'Email không tồn tại.' });
     });
 
@@ -74,8 +76,20 @@ describe('Kiểm thử chức năng đăng nhập', () => {
 
         expect(userModel.findUserByEmail).toHaveBeenCalledWith(reqBody.userEmail);
         expect(bcrypt.compare).toHaveBeenCalledWith(reqBody.userPassword, mockUserData.userPassword);
-        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.status).toHaveBeenCalledWith(401);
         expect(res.json).toHaveBeenCalledWith({ message: 'Sai mật khẩu.' });
+    });
+
+    it('Phải trả về lỗi khi tài khoản bị khóa', async () => {
+        const lockedUser = { ...mockUserData, userStatus: 'Locked' };
+        userModel.findUserByEmail.mockResolvedValue(lockedUser);
+
+        await login(req, res);
+
+        expect(userModel.findUserByEmail).toHaveBeenCalledWith(reqBody.userEmail);
+        expect(bcrypt.compare).not.toHaveBeenCalled();
+        expect(res.status).toHaveBeenCalledWith(403);
+        expect(res.json).toHaveBeenCalledWith({ message: 'Tài khoản này đã bị khóa.' });
     });
 
     it('Phải trả về lỗi khi xảy ra exception', async () => {

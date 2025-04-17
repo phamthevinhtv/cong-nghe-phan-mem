@@ -12,7 +12,7 @@ describe('Kiểm thử chức năng đặt lại mật khẩu', () => {
         userId: 'aGj0Hm_F2eOpqfGq5xj3',
         userFullName: 'Nguyễn Văn A',
         userEmail: 'example@fake.com',
-        userPassword: '$2b$10$oCUAJBj9IkvaC6J1cYtaXeCUcprhlhQau6w7KenS26dqwgiaeyhOW', 
+        userPassword: '$2b$10$oCUAJBj9IkvaC6J1cYtaXeCUcprhlhQau6w7KenS26dqwgiaeyhOW',
         userRole: 'Student',
         userOtp: 'nQGH1y',
         userOtpExpire: new Date(Date.now() + 10 * 60 * 1000),
@@ -67,7 +67,7 @@ describe('Kiểm thử chức năng đặt lại mật khẩu', () => {
         expect(userModel.findUserByEmail).toHaveBeenCalledWith(req.body.userEmail);
         expect(authModel.updatePassword).not.toHaveBeenCalled();
         expect(sendMail).not.toHaveBeenCalled();
-        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.status).toHaveBeenCalledWith(404);
         expect(res.json).toHaveBeenCalledWith({
             message: 'Email không tồn tại.'
         });
