@@ -89,8 +89,14 @@ const ForgotPassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const emptyFields = Object.entries(form)
-      .filter(([key, value]) => !value.trim())
+    const trimmedForm = {
+      ...form,
+      userOtp: form.userOtp.trim(),
+      userEmail: form.userEmail.trim(),
+      userPassword: form.userPassword.trim(),
+    };
+    const emptyFields = Object.entries(trimmedForm)
+      .filter(([key, value]) => !value)
       .map(([key]) => key);
 
     if (emptyFields.length > 0) {
@@ -98,19 +104,19 @@ const ForgotPassword = () => {
       return;
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.userEmail)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedForm.userEmail)) {
       toast.warning('Email không hợp lệ.', { position: 'top-right', autoClose: 3000 });
       return;
     }
 
-    if (form.userPassword.length < 6) {
+    if (trimmedForm.userPassword.length < 6) {
       toast.warning('Mật khẩu phải có ít nhất 6 ký tự.', { position: 'top-right', autoClose: 3000 });
       return;
     }
 
     setWaitReset(true);
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/reset-password', form);
+      const response = await axios.post('http://localhost:5000/api/auth/reset-password', trimmedForm);
       toast.success(response.data.message, { position: 'top-right', autoClose: 3000 });
     } catch (error) {
       toast.error(error.response?.data?.message || 'Lỗi máy chủ.', { position: 'top-right', autoClose: 3000 });
@@ -120,17 +126,21 @@ const ForgotPassword = () => {
   };
 
   const handleSendOtp = async () => {
-    if (form.userEmail.length <= 0) {
+    const trimmedForm = {
+      ...form,
+      userEmail: form.userEmail.trim(),
+    };
+    if (trimmedForm.userEmail.length <= 0) {
       toast.warning('Vui lòng nhập email.', { position: 'top-right', autoClose: 3000 });
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.userEmail)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedForm.userEmail)) {
       toast.warning('Email không hợp lệ.', { position: 'top-right', autoClose: 3000 });
       return;
     }
     setWaitSendOtp(true);
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/request-reset-password', form);
+      const response = await axios.post('http://localhost:5000/api/auth/request-reset-password', trimmedForm);
       toast.success(response.data.message, { position: 'top-right', autoClose: 3000 });
       setCountDown(60);
     } catch (error) {

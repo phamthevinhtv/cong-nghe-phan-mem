@@ -8,15 +8,22 @@ import closeIcon from '../assets/images/close.svg';
 import logo from '../assets/images/logo.png';
 import Input from './Input';
 import Link from './Link';
+import { toast } from 'react-toastify';
+import axios from 'axios';
+import { useUser } from '../App';
 
 const Wrapper = styled.div`
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
     background-color: var(--white-color);
     box-shadow: 0 0 5px 0 #c8c8c8;
     padding: 6px 24px;
 `;
 
 const Container = styled.div`
-    width: 1248px;
+    width: 1200px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -209,11 +216,11 @@ const ClearIcon = styled.div`
 `;
 
 const Header = () => {
+    const { sessionUser, setSessionUser } = useUser();
     const navigate = useNavigate();
     const location = useLocation();
     const [menuOpen, setMenuOpen] = useState(false);
     const [openNavBox, setOpenNavBox] = useState(null);
-    const [waitLogout, setWaitLogout] = useState(false); 
     const [searchValue, setSearchValue] = useState('');
 
     const notifyRef = useRef();
@@ -228,7 +235,6 @@ const Header = () => {
             ) {
                 setOpenNavBox(null);
             }
-
             if (
                 openNavBox === 'account' &&
                 accountRef.current &&
@@ -243,6 +249,18 @@ const Header = () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [openNavBox]);
+
+    const handleLogout = async () => {
+        try {
+            const response = await axios.post('http://localhost:5000/api/auth/logout', {}, { withCredentials: true });
+            toast.success(response.data.message, { position: 'top-right', autoClose: 3000 });
+            setSessionUser(null);
+        } catch (error) {
+            console.log(error);
+            
+            toast.error(error.response?.data?.message || 'Lỗi máy chủ.', { position: 'top-right', autoClose: 3000 });
+        } 
+    }
 
     return (
         <Wrapper>
@@ -290,12 +308,12 @@ const Header = () => {
                     <div ref={accountRef} style={{ position: 'relative' }}>
                         <Nav onClick={() => setOpenNavBox(openNavBox === 'account' ? null : 'account')}>
                             <NavIcon src={accountIcon} />
-                            <NavText>Tên user</NavText>
+                            <NavText>{sessionUser?.userFullName}</NavText>
                         </Nav>
                         {openNavBox === 'account' && (
                             <NavBox>
                                 <NavBoxLink to="/profile">Cá nhân</NavBoxLink>
-                                <NavBoxLink>Đăng xuất</NavBoxLink>
+                                <NavBoxLink onClick={handleLogout}>Đăng xuất</NavBoxLink>
                             </NavBox>
                         )}
                     </div>
@@ -314,7 +332,7 @@ const Header = () => {
                         Thông báo <NotifyNumMenu>(3)</NotifyNumMenu>
                     </MenuLink>
                     <MenuLink to="/profile" $active={location.pathname === '/profile'}>Cá nhân</MenuLink>
-                    <MenuLink>Đăng xuất</MenuLink>
+                    <MenuLink onClick={handleLogout}>Đăng xuất</MenuLink>
                 </BurgerMenuBody>
             </BurgerMenu>
         </Wrapper>

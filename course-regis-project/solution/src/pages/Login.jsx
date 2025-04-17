@@ -1,12 +1,12 @@
 import axios from 'axios';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import styled from 'styled-components';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import Label from '../components/Label';
 import Link from '../components/Link';
+import { useUser } from '../App';
 
 const Wrapper = styled.div`
   width: 100%;
@@ -39,12 +39,12 @@ const LabelQuestion = styled(Label)`
 `;
 
 const Login = () => {
+  const { setSessionUser } = useUser();
   const [form, setForm] = useState({
     userEmail: '',
     userPassword: '',
   });
 
-  const navigate = useNavigate();
   const [waitLogin, setWaitLogin] = useState(false); 
 
   const handleChange = (e) => {
@@ -53,26 +53,31 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const emptyFields = Object.entries(form)
-    .filter(([key, value]) => !value.trim())
+    const trimmedForm = {
+      ...form,
+      userEmail: form.userEmail.trim(),
+      userPassword: form.userPassword.trim(),
+    };
+    const emptyFields = Object.entries(trimmedForm)
+    .filter(([key, value]) => !value)
     .map(([key]) => key);
     if (emptyFields.length > 0) {
       toast.warning('Vui lòng nhập đầy đủ thông tin.', { position: 'top-right', autoClose: 3000 });
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.userEmail)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedForm.userEmail)) {
       toast.warning('Email không hợp lệ.', { position: 'top-right', autoClose: 3000 });
       return;
     }
-    if (form.userPassword.length < 6) {
+    if (trimmedForm.userPassword.length < 6) {
       toast.warning('Mật khẩu phải có ít nhất 6 ký tự.', { position: 'top-right', autoClose: 3000 });
       return;
     }
     setWaitLogin(true);
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', form, { withCredentials: true });
+      const response = await axios.post('http://localhost:5000/api/auth/login', trimmedForm, { withCredentials: true });
       toast.success(response.data.message, { position: 'top-right', autoClose: 3000 });
-      navigate('/home');
+      setSessionUser(response.data.user);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Lỗi máy chủ.', { position: 'top-right', autoClose: 3000 });
     } finally {
