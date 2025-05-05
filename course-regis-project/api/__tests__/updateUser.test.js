@@ -45,7 +45,7 @@ describe('Kiểm thử chức năng updateUser', () => {
         req.session.user.userRole = 'Student';
         await updateUser(req, res);
         expect(res.status).toHaveBeenCalledWith(403);
-        expect(res.json).toHaveBeenCalledWith({ message: 'Tài khoản này có quyền truy cập.' });
+        expect(res.json).toHaveBeenCalledWith({ message: 'Tài khoản này không có quyền truy cập.' });
     });
 
     it('Phải trả về lỗi 404 nếu không tìm thấy người dùng', async () => {

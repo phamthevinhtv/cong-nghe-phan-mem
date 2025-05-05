@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
 import CreateCourse from './pages/CreateCourse';
+import CourseDetail from './pages/CourseDetail';
 import { useState, useEffect, createContext, useContext } from 'react';
 import axios from 'axios';
 
@@ -48,6 +49,7 @@ function App() {
           <Route path="/home" element={sessionUser ? <Home /> : <Navigate to="/login" />} />
           <Route path="/profile" element={sessionUser ? <Profile /> : <Navigate to="/login" />} />
           <Route path="/create-course" element={sessionUser && sessionUser.userRole != 'Student' ? <CreateCourse /> : <Navigate to="/login" />} />
+          <Route path="/course-detail" element={sessionUser ? <CourseDetail /> : <Navigate to="/login" />} />
         </Routes>
       </BrowserRouter>
     </UserContext.Provider>
