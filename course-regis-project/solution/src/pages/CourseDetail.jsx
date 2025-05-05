@@ -5,6 +5,7 @@ import { useUser } from '../App';
 import ViewCourse from '../components/ViewCourse';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Wrapper = styled.div`
   display: flex;
@@ -23,6 +24,7 @@ const Main = styled.main`
 
 const CourseDetail = () => {
   const { sessionUser } = useUser();
+  const navigate = useNavigate();
 
   const [form, setForm] = useState({
     courseName: '',
@@ -39,26 +41,34 @@ const CourseDetail = () => {
   });
 
   const getCourse = async () => {
-    try {
-      const response = await axios.get(`http://localhost:5000/api/course/4NZBdkRuxLZkvIMhaGP-`, { withCredentials: true });
-      if (response.data.course) {
-        const course = response.data.course;
-        setForm({
-          courseName: course.courseName || '',
-          courseDescription: course.courseDescription || '',
-          courseCategoryId: course.courseCategoryId || null,
-          courseStartDate: course.courseStartDate || '',
-          courseEndDate: course.courseEndDate || '',
-          courseMaxStudent: course.courseMaxStudent || 0,
-          totalEnrollments: course.totalEnrollments || 0,
-          coursePrice: course.coursePrice || 0,
-          courseStatus: course.courseStatus || '',
-          userId: course.userId || null,
-          userFullName: course.userFullName || '',
-        });
+    const storedCourse = localStorage.getItem('selectedCourse');
+    if (storedCourse) {
+      const selectedCourse = JSON.parse(storedCourse);
+
+      try {
+        const response = await axios.get(`http://localhost/api/course/${selectedCourse.courseId}`, { withCredentials: true });
+        if (response.data.course) {
+          const course = response.data.course;
+
+          setForm({
+            courseName: course.courseName || '',
+            courseDescription: course.courseDescription || '',
+            courseCategoryId: course.courseCategoryId || null,
+            courseStartDate: course.courseStartDate || '',
+            courseEndDate: course.courseEndDate || '',
+            courseMaxStudent: course.courseMaxStudent || 0,
+            totalEnrollments: course.totalEnrollments || 0,
+            coursePrice: course.coursePrice || 0,
+            courseStatus: course.courseStatus || '',
+            userId: course.userId || null,
+            userFullName: course.userFullName || '',
+          });
+        }
+      } catch (err) {
+        console.error('Lỗi khi lấy thông tin khóa học:', err);
       }
-    } catch (err) {
-      console.error('Lỗi khi lấy thông tin khóa học:', err);
+    } else {
+      navigate('/home');
     }
   };
 

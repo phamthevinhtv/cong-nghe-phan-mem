@@ -25,13 +25,13 @@ const RadioInput = styled.input`
 `;
 
 const RadioGroup = ({ name, options, value, onChange, gap, direction, margin, width, ...props }) => {
-  const [a, setA] = useState(false);
+  const [choose, setChoose] = useState(false);
   return (
-    <RadioGroupContainer style={{borderColor: a ? 'var(--white-color)' : '#c8c8c8'}}
+    <RadioGroupContainer style={{borderColor: choose ? '#c8c8c8' : ''}}
     id={name} gap={gap} direction={direction} margin={margin} width={width} {...props}>
       {options.map((option) => (
         <RadioLabel key={option.value}>
-          <RadioInput onClick={() => {if(option.value) {setA(true)}}} type="radio" name={name} value={option.value} checked={value === option.value} onChange={onChange} {...props}/>
+          <RadioInput onClick={() => {if(option.value) {setChoose(true)}}} type="radio" name={name} value={option.value} checked={value === option.value} onChange={onChange} {...props}/>
           {option.label}
         </RadioLabel>
       ))}
