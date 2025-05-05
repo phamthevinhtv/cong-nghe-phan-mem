@@ -254,6 +254,7 @@ const Header = () => {
             const response = await axios.post('http://localhost:5000/api/auth/logout', {}, { withCredentials: true });
             toast.success(response.data.message, { position: 'top-right', autoClose: 3000 });
             setSessionUser(null);
+            localStorage.removeItem('selectedCourse');
         } catch (error) {
             console.log(error);
             
