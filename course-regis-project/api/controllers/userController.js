@@ -9,7 +9,7 @@ const getUser = async (req, res) => {
     }
     if (currentUser.userId != userId) {
         if(currentUser.userRole != "Admin") {
-            return res.status(403).json({ message: 'Tài khoản này có quyền truy cập.' });
+            return res.status(403).json({ message: 'Tài khoản này không có quyền truy cập.' });
         }
     }
     try {
@@ -48,7 +48,7 @@ const updateUser = async (req, res) => {
     }
     if (currentUser.userId != userId) {
         if(currentUser.userRole != "Admin") {
-            return res.status(403).json({ message: 'Tài khoản này có quyền truy cập.' });
+            return res.status(403).json({ message: 'Tài khoản này không có quyền truy cập.' });
         }
     }
     try {
