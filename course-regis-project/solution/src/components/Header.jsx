@@ -18,8 +18,9 @@ const Wrapper = styled.div`
     right: 0;
     top: 0;
     background-color: var(--white-color);
-    box-shadow: 0 0 5px 0 #c8c8c8;
+    box-shadow: var(--shadow-normal);
     padding: 6px 24px;
+    z-index: 10;
 `;
 
 const Container = styled.div`
@@ -31,7 +32,7 @@ const Container = styled.div`
 `;
 
 const Logo = styled.img`
-    width: 100px;
+    width: 80px;
     cursor: pointer;
 `;
 
@@ -39,7 +40,7 @@ const NavContainer = styled.div`
     display: flex;
     align-items: center;
 
-    @media (max-width: 768px) {
+    @media (max-width: 720px) {
         display: none;
     }
 `;
@@ -48,14 +49,14 @@ const Nav = styled.div`
     position: relative;
     display: flex;
     align-items: center;
-    padding: 6px 6px 6px 2px;
+    padding: 8px 8px 8px 4px;
     margin-left: 12px;
     cursor: pointer;
     min-width: fit-content;
+    border-radius: 6px;
 
     &:hover {
-        background-color: #f0f0f0;
-        border-radius: 6px;
+        background-color: #f0f0f0 !important;
     }
 `;
 
@@ -74,20 +75,16 @@ const NotifyNum = styled.div`
     padding: 0 2px;
     font-size: 1rem;
     border-radius: 2px;
-    top: -2px;
-    right: calc(100% - 12px);
-
-    @media (max-width: 768px) {
-        right: calc(100% - 16px);
-    }
+    top: 1px;
+    right: calc(100% - 13px);
 `;
 
 const BurgerIcon = styled.img`
     margin-left: 12px;
-    width: 40px;
+    width: 32px;
     cursor: pointer;
 
-    @media (min-width: 768.1111px) {
+    @media (min-width: 720px) {
         display: none;
     }
 `;
@@ -97,12 +94,12 @@ const BurgerMenu = styled.div`
     top: 0;
     right: 0;
     bottom: 0;
-    width: 300px;
+    width: 200px;
     background-color: var(--white-color);
     transform: ${({ $isOpen }) => $isOpen ? 'translateX(0)' : 'translateX(100%)'};
     transition: transform 0.1s linear;
     z-index: 11;
-    padding: 15px 24px;
+    padding: 11px 24px 10px 24px;
 `;
 
 const Overlay = styled.div`
@@ -123,7 +120,7 @@ const BurgerMenuHeader = styled.div`
 `;
 
 const CloseIcon = styled.img`
-    width: 40px;
+    width: 32px;
     cursor: pointer;
     margin-left: auto;
 `;
@@ -152,12 +149,14 @@ const NotifyNumMenu = styled.span`
 
 const NavBox = styled.div`
     position: absolute;
-    top: 100%;
+    top: calc(100% + 4px);
     right: 0;
-    min-width: 100%;
+    width: calc(100% - 12px);
+    min-width: 120px;
     background-color: var(--white-color);
-    box-shadow: 0 0 5px 0 #c8c8c8;
+    box-shadow: var(--shadow-normal);
     padding: 12px;
+    border: var(--border-normal);
     border-radius: 6px;
     cursor: default;
     z-index: 20;
@@ -165,7 +164,7 @@ const NavBox = styled.div`
 
 const NavBoxLink = styled(Link)`
     display: block;
-    padding: 6px;
+    padding: 8px;
     border-radius: 6px;
 
     &:hover {
@@ -181,7 +180,7 @@ const NotifyList = styled.div`
 
 const NotifyItem = styled(Link)`
     display: block;
-    padding: 6px;
+    padding: 8px;
     border-radius: 6px;
     background-color:rgb(255, 240, 240);
 
@@ -274,7 +273,8 @@ const Header = () => {
                 </Search>
                 <NavContainer>
                     <div ref={notifyRef} style={{ position: 'relative' }}>
-                        <Nav onClick={() => setOpenNavBox(openNavBox === 'notify' ? null : 'notify')}>
+                        <Nav onClick={() => setOpenNavBox(openNavBox === 'notify' ? null : 'notify')}
+                        style={{ backgroundColor: openNavBox === 'notify' ? '#f0f0f0' : '#ffffff' }}>
                             <NavIcon src={notifyIcon} />
                             <NavText>Thông báo</NavText>
                             <NotifyNum>3</NotifyNum>
@@ -283,7 +283,7 @@ const Header = () => {
                             <NavBox style={{ minWidth: '400px' }}>
                                 <p style={{
                                     textAlign: 'center',
-                                    paddingBottom: '8px',
+                                    paddingBottom: '12px',
                                     borderBottom: 'var(--border-normal)'
                                 }}>
                                     Thông báo mới nhất
@@ -298,7 +298,7 @@ const Header = () => {
                                     borderTop: 'var(--border-normal)',
                                     borderRadius: '0 0 6px 6px',
                                     display: 'block',
-                                    paddingTop: '8px'
+                                    paddingTop: '12px'
                                 }}>
                                     Xem tất cả
                                 </Link>
@@ -306,7 +306,8 @@ const Header = () => {
                         )}
                     </div>
                     <div ref={accountRef} style={{ position: 'relative' }}>
-                        <Nav onClick={() => setOpenNavBox(openNavBox === 'account' ? null : 'account')}>
+                        <Nav onClick={() => setOpenNavBox(openNavBox === 'account' ? null : 'account')}
+                        style={{ backgroundColor: openNavBox === 'account' ? '#f0f0f0' : '#ffffff' }}>
                             <NavIcon src={accountIcon} />
                             <NavText>{sessionUser?.userFullName}</NavText>
                         </Nav>
@@ -323,7 +324,7 @@ const Header = () => {
             {menuOpen && <Overlay onClick={() => setMenuOpen(false)} />}
             <BurgerMenu $isOpen={menuOpen}>
                 <BurgerMenuHeader>
-                    <Logo style={{ width: '70px' }} src={logo} onClick={() => navigate('/home')} />
+                    <Logo style={{ width: '65px' }} src={logo} onClick={() => navigate('/home')} />
                     <CloseIcon src={closeIcon} onClick={() => setMenuOpen(false)} />
                 </BurgerMenuHeader>
                 <BurgerMenuBody>

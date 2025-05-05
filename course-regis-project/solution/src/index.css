@@ -1,6 +1,6 @@
 :root {
   --font-size-normal: 1.6rem;
-  --border-normal: 1px solid #6c757d;
+  --border-normal: 1px solid #c8c8c8;
   --primary-color: #0d6efd;
   --success-color: #198754;
   --danger-color: #dc3545;
@@ -8,6 +8,7 @@
   --white-color: #ffffff;
   --black-color: #000000;
   --text-color: #282828;
+  --shadow-normal: 0 2px 4px #0000001a;
 }
 
 *,

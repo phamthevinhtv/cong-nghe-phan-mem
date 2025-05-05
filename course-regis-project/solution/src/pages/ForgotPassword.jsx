@@ -6,6 +6,7 @@ import Button from '../components/Button';
 import Input from '../components/Input';
 import Label from '../components/Label';
 import Link from '../components/Link';
+import emptyInputWarning from '../utils/emtyInputWarning';
 
 const Wrapper = styled.div`
   width: 100%;
@@ -26,6 +27,7 @@ const H2 = styled.h2`
   text-align: center;
   font-size: 2.4rem;
   margin-bottom: 24px;
+  font-weight: 500;
 `;
 
 const InlineFlex = styled.div`
@@ -36,7 +38,7 @@ const InlineFlex = styled.div`
 `;
 
 const LabelQuestion = styled(Label)`
-  @media (max-width: 342px) {
+  @media (max-width: 346px) {
     flex-direction: column;
     align-items: center;
     text-align: center;
@@ -100,16 +102,21 @@ const ForgotPassword = () => {
       .map(([key]) => key);
 
     if (emptyFields.length > 0) {
+      emptyFields.forEach((field) => {
+        emptyInputWarning(field);
+      });
       toast.warning('Vui lòng nhập đầy đủ thông tin.', { position: 'top-right', autoClose: 3000 });
       return;
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedForm.userEmail)) {
+      emptyInputWarning('userEmail');
       toast.warning('Email không hợp lệ.', { position: 'top-right', autoClose: 3000 });
       return;
     }
 
     if (trimmedForm.userPassword.length < 6) {
+      emptyInputWarning('userPassword');
       toast.warning('Mật khẩu phải có ít nhất 6 ký tự.', { position: 'top-right', autoClose: 3000 });
       return;
     }
@@ -131,10 +138,12 @@ const ForgotPassword = () => {
       userEmail: form.userEmail.trim(),
     };
     if (trimmedForm.userEmail.length <= 0) {
+      emptyInputWarning('userEmail');
       toast.warning('Vui lòng nhập email.', { position: 'top-right', autoClose: 3000 });
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedForm.userEmail)) {
+      emptyInputWarning('userEmail');
       toast.warning('Email không hợp lệ.', { position: 'top-right', autoClose: 3000 });
       return;
     }
@@ -170,7 +179,7 @@ const ForgotPassword = () => {
               onClick={handleSendOtp}
               type='button'
               backgroundColor="var(--success-color)"
-              width={countDown > 0 ? '200px' : '120px'}
+              width={countDown > 0 ? '200px' : 'fit-content'}
             >
               {waitSendOtp ? 'Đang gửi' : countDown > 0 ? `Gửi lại sau ${countDown}s` : 'Gửi OTP'}
             </Button>

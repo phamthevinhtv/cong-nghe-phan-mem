@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
+import CreateCourse from './pages/CreateCourse';
 import { useState, useEffect, createContext, useContext } from 'react';
 import axios from 'axios';
 
@@ -46,6 +47,7 @@ function App() {
           <Route path="/forgot-password" element={sessionUser ? <Navigate to="/home" /> : <ForgotPassword />} />
           <Route path="/home" element={sessionUser ? <Home /> : <Navigate to="/login" />} />
           <Route path="/profile" element={sessionUser ? <Profile /> : <Navigate to="/login" />} />
+          <Route path="/create-course" element={sessionUser && sessionUser.userRole != 'Student' ? <CreateCourse /> : <Navigate to="/login" />} />
         </Routes>
       </BrowserRouter>
     </UserContext.Provider>
