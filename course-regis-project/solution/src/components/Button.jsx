@@ -10,6 +10,7 @@ const StyledButton = styled.button`
   width: ${(props) => props.width || '100%'};
   margin: ${(props) => props.margin};
   color: white;
+  min-width: fit-content;
 
   &:hover {
     opacity: 0.9;

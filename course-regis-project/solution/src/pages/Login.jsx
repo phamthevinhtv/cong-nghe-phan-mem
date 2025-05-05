@@ -7,6 +7,7 @@ import Input from '../components/Input';
 import Label from '../components/Label';
 import Link from '../components/Link';
 import { useUser } from '../App';
+import emptyInputWarning from '../utils/emtyInputWarning';
 
 const Wrapper = styled.div`
   width: 100%;
@@ -27,10 +28,11 @@ const H2 = styled.h2`
   text-align: center;
   font-size: 2.4rem;
   margin-bottom: 24px;
+  font-weight: 500;
 `;
 
 const LabelQuestion = styled(Label)`
-  @media (max-width: 342px) {
+  @media (max-width: 346px) {
     flex-direction: column;
     align-items: center;
     text-align: center;
@@ -62,14 +64,19 @@ const Login = () => {
     .filter(([key, value]) => !value)
     .map(([key]) => key);
     if (emptyFields.length > 0) {
+      emptyFields.forEach((field) => {
+        emptyInputWarning(field);
+      });
       toast.warning('Vui lòng nhập đầy đủ thông tin.', { position: 'top-right', autoClose: 3000 });
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedForm.userEmail)) {
+      emptyInputWarning('userEmail');
       toast.warning('Email không hợp lệ.', { position: 'top-right', autoClose: 3000 });
       return;
     }
     if (trimmedForm.userPassword.length < 6) {
+      emptyInputWarning('userPassword');
       toast.warning('Mật khẩu phải có ít nhất 6 ký tự.', { position: 'top-right', autoClose: 3000 });
       return;
     }
@@ -96,11 +103,11 @@ const Login = () => {
           <H2>Đăng nhập</H2>
           <Label gap="2px" margin="0 0 12px 0">
             Địa chỉ email:
-            <Input name="userEmail" value={form.userEmail} onChange={handleChange} type="email" placeholder="Nhập địa chỉ email" required />
+            <Input name="userEmail" value={form.userEmail} onChange={handleChange} type="email" placeholder="Nhập địa chỉ email" />
           </Label>
           <Label gap="2px" margin="0 0 12px 0">
             Mật khẩu:
-            <Input name="userPassword" value={form.userPassword} onChange={handleChange} type="password" placeholder="Nhập mật khẩu" required />
+            <Input name="userPassword" value={form.userPassword} onChange={handleChange} type="password" placeholder="Nhập mật khẩu" />
           </Label>
           <Button margin="12px 0 0 0" disabled={waitLogin} onClick={handleSubmit}>
             {waitLogin ? 'Đang đăng nhập...' : 'Đăng nhập'}

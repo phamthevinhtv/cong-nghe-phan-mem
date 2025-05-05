@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import styled from 'styled-components';
 import Button from '../components/Button';
@@ -8,6 +7,7 @@ import Input from '../components/Input';
 import Label from '../components/Label';
 import Link from '../components/Link';
 import RadioGroup from '../components/RadioGroup';
+import emptyInputWarning from '../utils/emtyInputWarning';
 
 const Wrapper = styled.div`
   width: 100%;
@@ -28,25 +28,18 @@ const H2 = styled.h2`
   text-align: center;
   font-size: 2.4rem;
   margin-bottom: 24px;
+  font-weight: 500;
 `;
 
 const RadioGroupGender = styled(RadioGroup)`
-  @media (max-width: 406px) {
+  @media (max-width: 346px) {
     flex-direction: column;
     gap: 2px;
-  }
-`;
-
-const LabelGender = styled(Label)`
-  @media (max-width: 406px) {
-    flex-direction: column;
-    gap: 2px;
-    align-items: baseline;
   }
 `;
 
 const LabelQuestion = styled(Label)`
-  @media (max-width: 342px) {
+  @media (max-width: 346px) {
     flex-direction: column;
     align-items: center;
     text-align: center;
@@ -64,7 +57,6 @@ const Register = () => {
     userAddress: '',
   });
 
-  const navigate = useNavigate();
   const [waitRegister, setWaitRegister] = useState(false); 
 
   const handleChange = (e) => {
@@ -86,18 +78,24 @@ const Register = () => {
     .filter(([key, value]) => !value)
     .map(([key]) => key);
     if (emptyFields.length > 0) {
+      emptyFields.forEach((field) => {
+        emptyInputWarning(field);
+      });
       toast.warning('Vui lòng nhập đầy đủ thông tin.', { position: 'top-right', autoClose: 3000 });
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedForm.userEmail)) {
+      emptyInputWarning('userEmail');
       toast.warning('Email không hợp lệ.', { position: 'top-right', autoClose: 3000 });
       return;
     }
     if (!/^(?:\+84[3|5|7|8|9][0-9]{8}|0[3|5|7|8|9][0-9]{8})$/.test(trimmedForm.userPhoneNumber)) {
+      emptyInputWarning('userPhoneNumber');
       toast.warning('Số điện thoại không hợp lệ.', { position: 'top-right', autoClose: 3000 });
       return;
     }
     if (trimmedForm.userPassword.length < 6) {
+      emptyInputWarning('userPassword');
       toast.warning('Mật khẩu phải có ít nhất 6 ký tự.', { position: 'top-right', autoClose: 3000 });
       return;
     }
@@ -123,13 +121,13 @@ const Register = () => {
           <H2>Đăng ký</H2>
           <Label gap="2px" margin="0 0 12px 0">
             Địa chỉ email:
-            <Input name="userEmail" value={form.userEmail} onChange={handleChange} type="email" placeholder="Nhập địa chỉ email" required />
+            <Input name="userEmail" value={form.userEmail} onChange={handleChange} type="email" placeholder="Nhập địa chỉ email" />
           </Label>
           <Label gap="2px" margin="0 0 12px 0">
             Họ và tên:
-            <Input name="userFullName" value={form.userFullName} onChange={handleChange} placeholder="Nhập họ và tên" required />
+            <Input name="userFullName" value={form.userFullName} onChange={handleChange} placeholder="Nhập họ và tên" />
           </Label>
-          <LabelGender margin="0 0 12px 0" direction="row" gap="24px" alignItem="center">
+          <Label margin="0 0 12px 0" gap="2px">
             Giới tính:
             <RadioGroupGender name="userGender" value={form.userGender} onChange={handleChange} gap="24px" direction="row"
               options={[
@@ -137,19 +135,19 @@ const Register = () => {
                 { value: 'Nữ', label: 'Nữ' },
                 { value: 'Khác', label: 'Khác' },
               ]}
-              required/>
-          </LabelGender>
+            />
+          </Label>
           <Label gap="2px" margin="0 0 12px 0">
             Số điện thoại:
-            <Input name="userPhoneNumber" value={form.userPhoneNumber} onChange={handleChange} placeholder="Nhập số điện thoại" required />
+            <Input name="userPhoneNumber" value={form.userPhoneNumber} onChange={handleChange} placeholder="Nhập số điện thoại" />
           </Label>
           <Label gap="2px" margin="0 0 12px 0">
             Địa chỉ:
-            <Input name="userAddress" value={form.userAddress} onChange={handleChange} placeholder="Nhập địa chỉ" required />
+            <Input name="userAddress" value={form.userAddress} onChange={handleChange} placeholder="Nhập địa chỉ" />
           </Label>
           <Label gap="2px" margin="0 0 12px 0">
             Mật khẩu:
-            <Input name="userPassword" value={form.userPassword} onChange={handleChange} type="password" placeholder="Nhập mật khẩu" required />
+            <Input name="userPassword" value={form.userPassword} onChange={handleChange} type="password" placeholder="Nhập mật khẩu" />
           </Label>
           <Button margin="12px 0 0 0" disabled={waitRegister} onClick={handleSubmit}>
             {waitRegister ? 'Đang đăng ký...' : 'Đăng ký'}
