@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useUser } from '../App';
+import Button from '../components/Button';
+import CourseEditor from '../components/CourseEditor';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 import ViewCourse from '../components/ViewCourse';
@@ -22,8 +24,28 @@ const Main = styled.main`
   z-index: 0;
 `;
 
+const ButtonBox = styled.div`
+  display: flex;
+  gap: 24px;
+  margin-top: 12px;
+  justify-content: right;
+
+  @media (max-width: 500px) {
+    flex-direction: column;
+    gap: 12px;
+  }
+`;
+
+const ButtonMod = styled(Button)`
+  width: 100px;
+  @media (max-width: 500px) {
+    width: 100%;
+  }
+`;
+
 const CourseDetail = () => {
   const { sessionUser } = useUser();
+  const [isView, setIsView] = useState(true);
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -80,7 +102,18 @@ const CourseDetail = () => {
     <Wrapper>
       <Header sessionUser={sessionUser} />
       <Main>
-          <ViewCourse form={form} />
+        <div style={{ display: isView ? 'block' : 'none' }}>
+          <ViewCourse form={form} isUpdate={true}/>
+        </div>
+        <ButtonBox>
+          <ButtonMod style={{ display: sessionUser.userRole != 'Student' ? (isView ? 'block' : 'none') : 'none' }} 
+          backgroundColor='var(--success-color)' onClick={() => setIsView(false)}>
+            Cập nhật
+        </ButtonMod>
+        </ButtonBox>
+        <div style={{ display: isView ? 'none' : 'block' }}>
+          <CourseEditor form={form} setForm={setForm} mode='Update' setIsView={setIsView} />
+        </div>
       </Main>
       <Footer />
     </Wrapper>

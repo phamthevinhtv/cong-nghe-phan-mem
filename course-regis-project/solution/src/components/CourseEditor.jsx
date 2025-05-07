@@ -1,13 +1,13 @@
-import { useState, useRef } from 'react';
+import axios from 'axios';
+import { useEffect, useRef, useState } from 'react';
+import { toast } from 'react-toastify';
 import styled from 'styled-components';
-import Select from '../components/Select';
 import Button from '../components/Button';
 import Input from '../components/Input';
-import Label from '../components/Label';
 import JoditEditor from '../components/JoditEditor';
-import { toast } from 'react-toastify';
-import axios from 'axios';
-import emptyInputWarning from '../utils/emtyInputWarning'
+import Label from '../components/Label';
+import Select from '../components/Select';
+import emptyInputWarning from '../utils/emtyInputWarning';
 
 const H2 = styled.h2`
   font-size: 2.4rem;
@@ -57,6 +57,15 @@ const ButtonMod = styled(Button)`
 const CourseEditor = ({ form, setForm, mode, setIsView }) => {
   const formRef = useRef();
   const [waitProcess, setWaitProcess] = useState(false); 
+  const [isUpdate, setIsUpdate] = useState(false);
+
+  useEffect(() => {
+    if(mode == 'Create') {
+      setIsUpdate(false);
+    } else {
+      setIsUpdate(true);
+    }
+  }, [mode]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -90,10 +99,12 @@ const CourseEditor = ({ form, setForm, mode, setIsView }) => {
     };
     if(processedForm.courseStatus == 'Publish') {
       const emptyFields = Object.entries(processedForm)
-      .filter(([key, value]) => !value && key != 'courseCategoryId' && key != 'userId' 
+      .filter(([key, value]) => !value && key != 'courseCategoryId' && key != 'userId' && key != 'userFullName'
       && key != 'totalEnrollments' && key != 'coursePrice' && key != 'courseDescription')
       .map(([key]) => key);
       if (emptyFields.length > 0) {
+        console.log(emptyFields);
+        
         emptyFields.forEach((field) => {
           emptyInputWarning(field);
         });
@@ -113,7 +124,18 @@ const CourseEditor = ({ form, setForm, mode, setIsView }) => {
     }
     setWaitProcess(true);
     try {
-        const response = await axios.post('http://localhost:5000/api/course/create-course', processedForm, { withCredentials: true });
+        let response;
+        if (!isUpdate) {
+          response = await axios.post('http://localhost:5000/api/course/create-course', processedForm, { withCredentials: true });
+          localStorage.setItem('selectedCourse', JSON.stringify(response.data.course));
+          setIsUpdate(true);
+        } else {
+          const storedCourse = localStorage.getItem('selectedCourse');
+          if (storedCourse) {
+            const selectedCourse = JSON.parse(storedCourse);
+            response = await axios.put(`http://localhost:5000/api/course/${selectedCourse.courseId}`, processedForm, { withCredentials: true });
+          }
+        }
         toast.success(response.data.message, { position: 'top-right', autoClose: 3000 });
     } catch (error) {
         toast.error(error.response?.data?.message || 'Lỗi máy chủ.', { position: 'top-right', autoClose: 3000 });
@@ -185,7 +207,8 @@ const CourseEditor = ({ form, setForm, mode, setIsView }) => {
         <ButtonBox>
           <ButtonMod backgroundColor='#dcdcdc' style={{ color: "var(--text-color)" }} onClick={() => { setIsView(true) }}>Xem</ButtonMod>
           <ButtonMod disabled={waitProcess} backgroundColor='var(--primary-color)' 
-            onClick={handleSubmitButton}>{waitProcess ? "Đang tạo..." : "Tạo"}
+            onClick={handleSubmitButton}>{waitProcess ? (!isUpdate ? "Đang tạo..." : 'Đang lưu...')
+            : (!isUpdate ? "Tạo" : 'Lưu')}
           </ButtonMod>
         </ButtonBox>
     </>

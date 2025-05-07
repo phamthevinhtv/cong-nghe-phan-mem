@@ -1,5 +1,5 @@
 const express = require('express');
-const { createCourse, getCourse, getCourses } = require('../controllers/courseController');
+const { createCourse, getCourse, getCourses, updateCourse } = require('../controllers/courseController');
 const router = express.Router();
 
 /**
@@ -245,6 +245,159 @@ router.post('/create-course', createCourse);
  *                   example: "Tìm khóa học thất bại."
  */
 router.get('/courses', getCourses);
+
+/**
+ * @swagger
+ * /api/course/{courseId}:
+ *   put:
+ *     summary: Cập nhật thông tin khóa học (cần đăng nhập)
+ *     tags:
+ *       - Khóa học
+ *     parameters:
+ *       - in: path
+ *         name: courseId
+ *         required: true
+ *         description: ID của khóa học cần cập nhật
+ *         schema:
+ *           type: string
+ *           example: "COURSE123"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               courseName:
+ *                 type: string
+ *                 example: "Khóa học giao tiếp nâng cao"
+ *               courseDescription:
+ *                 type: string
+ *                 example: "Khóa học cải thiện giao tiếp chuyên sâu"
+ *               courseCategoryId:
+ *                 type: string
+ *                 nullable: true
+ *                 example: null
+ *               courseStartDate:
+ *                 type: string
+ *                 format: date
+ *                 example: "2025-05-15"
+ *               courseEndDate:
+ *                 type: string
+ *                 format: date
+ *                 example: "2025-05-29"
+ *               courseMaxStudent:
+ *                 type: integer
+ *                 example: 30
+ *               coursePrice:
+ *                 type: number
+ *                 example: 0
+ *               courseStatus:
+ *                 type: string
+ *                 enum: ["Draft", "Publish"]
+ *                 example: "Draft"
+ *               userId:
+ *                 type: string
+ *                 nullable: true
+ *                 example: null
+ *                 description: Chỉ Admin có thể cập nhật userId
+ *     responses:
+ *       200:
+ *         description: Cập nhật khóa học thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Cập nhật thành công."
+ *                 course:
+ *                   type: object
+ *                   properties:
+ *                     courseName:
+ *                       type: string
+ *                       example: "Khóa học giao tiếp nâng cao"
+ *                     courseDescription:
+ *                       type: string
+ *                       example: "Khóa học cải thiện giao tiếp chuyên sâu"
+ *                     courseCategoryId:
+ *                       type: string
+ *                       nullable: true
+ *                       example: null
+ *                     courseStartDate:
+ *                       type: string
+ *                       format: date
+ *                       example: "2025-05-15"
+ *                     courseEndDate:
+ *                       type: string
+ *                       format: date
+ *                       example: "2025-05-29"
+ *                     courseMaxStudent:
+ *                       type: integer
+ *                       example: 30
+ *                     coursePrice:
+ *                       type: number
+ *                       example: 0
+ *                     courseStatus:
+ *                       type: string
+ *                       example: "Draft"
+ *                     userId:
+ *                       type: string
+ *                       nullable: true
+ *                       example: null
+ *       400:
+ *         description: Không có thay đổi để cập nhật
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Không có thay đổi để cập nhật."
+ *       401:
+ *         description: Người dùng chưa đăng nhập
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Cần đăng nhập để có quyền truy cập."
+ *       403:
+ *         description: Người dùng không có quyền truy cập
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Tài khoản này không có quyền truy cập."
+ *       404:
+ *         description: Khóa học không tồn tại
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Khóa học không tồn tại."
+ *       500:
+ *         description: Lỗi phía máy chủ khi cập nhật khóa học
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Cập nhật thất bại."
+ */
+router.put('/:courseId', updateCourse);
 
 /**
  * @swagger
