@@ -1,11 +1,11 @@
+import axios from 'axios';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { useUser } from '../App';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
-import { useUser } from '../App';
 import ViewCourse from '../components/ViewCourse';
-import { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 
 const Wrapper = styled.div`
   display: flex;
@@ -46,7 +46,7 @@ const CourseDetail = () => {
       const selectedCourse = JSON.parse(storedCourse);
 
       try {
-        const response = await axios.get(`http://localhost/api/course/${selectedCourse.courseId}`, { withCredentials: true });
+        const response = await axios.get(`http://localhost:5000/api/course/${selectedCourse.courseId}`, { withCredentials: true });
         if (response.data.course) {
           const course = response.data.course;
 

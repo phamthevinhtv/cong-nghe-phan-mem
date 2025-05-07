@@ -50,9 +50,26 @@ const findCourseById = async (courseId) => {
     }
 };
 
+const findCourses = async () => {
+    let connection;
+    try {
+        connection = await getConnection();
+        const query = `SELECT c.courseId,  c.userId, c.courseName, c.courseStartDate, c.courseEndDate, c.coursePrice, c.courseStatus, 
+        (SELECT COUNT(*) FROM enrollments e WHERE e.courseId = c.courseId AND e.enrollmentStatus IN ('Enrolled', 'Completed')) 
+        AS totalEnrollments, u.userFullName, c.courseMaxStudent, e1.userId AS studentId, e1.enrollmentStatus FROM courses AS c 
+        LEFT JOIN users u ON c.userId = u.userId LEFT JOIN enrollments e1 ON e1.courseId = c.courseId`;
+        const [rows] = await connection.query(query);
+        return rows.length > 0 ? rows : [];
+    } catch (err) {
+        throw err;
+    } finally {
+        await closeConnection(connection);
+    }
+};
+
 module.exports = {
     createCourseDB,
     findCourseByName,
-    findCourseById
+    findCourseById,
+    findCourses
 };
-
