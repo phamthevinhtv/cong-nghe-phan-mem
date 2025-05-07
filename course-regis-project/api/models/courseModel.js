@@ -38,8 +38,8 @@ const findCourseById = async (courseId) => {
         connection = await getConnection();
         const query = `SELECT c.courseId, c.courseCategoryId, cct.courseCategoryName, c.courseName, c.courseDescription, c.courseStartDate,
         c.courseEndDate, c.courseMaxStudent, c.coursePrice, c.courseStatus, c.courseCreatedAt, c.courseUpdatedAt, c.userId, u.userFullName, 
-        (SELECT COUNT(*) FROM enrollments e WHERE e.courseId = c.courseId AND e.enrollmentStatus IN ('Enrolled', 'Completed')) 
-        AS totalEnrollments, e1.userId AS studentId FROM courses AS c JOIN users AS u ON u.userId = c.userId LEFT JOIN courseCategories AS cct ON 
+        e1.enrollmentStatus, (SELECT COUNT(*) FROM enrollments e WHERE e.courseId = c.courseId AND e.enrollmentStatus IN ('Enrolled', 'Completed')) 
+        AS totalEnrollments, e1.userId AS studentId FROM courses AS c LEFT JOIN users AS u ON u.userId = c.userId LEFT JOIN courseCategories AS cct ON 
         cct.courseCategoryId = c.courseCategoryId LEFT JOIN enrollments e1 ON e1.courseId = c.courseId WHERE c.courseId = ?`;
         const [rows] = await connection.query(query, [courseId]);
         return rows.length > 0 ? rows[0] : null;
@@ -67,9 +67,27 @@ const findCourses = async () => {
     }
 };
 
+const updateCourseDB = async(courseId, courseData) => {
+    let connection;
+    try {
+        connection = await getConnection();
+        const { userId, courseCategoryId, courseName, courseDescription, courseStartDate, courseEndDate, courseMaxStudent, coursePrice, courseStatus, } = courseData;
+        const query = `UPDATE courses SET  userId = ?, courseCategoryId = ?, courseName = ?, courseDescription = ?, courseStartDate = ?,
+        courseEndDate = ?, courseMaxStudent = ?, coursePrice = ?, courseStatus = ? WHERE courseId = ?`;
+        const values = [userId, courseCategoryId, courseName, courseDescription, courseStartDate, courseEndDate, courseMaxStudent, coursePrice, courseStatus, courseId];
+        const [result] = await connection.query(query, values);
+        return result;
+    } catch (err) {
+        throw err;
+    } finally {
+        await closeConnection(connection);
+    }
+};
+
 module.exports = {
     createCourseDB,
     findCourseByName,
     findCourseById,
-    findCourses
+    findCourses,
+    updateCourseDB
 };

@@ -1,4 +1,4 @@
-const { createCourseDB, findCourseByName, findCourseById, findCourses } = require('../models/courseModel');
+const { createCourseDB, findCourseByName, findCourseById, findCourses, updateCourseDB } = require('../models/courseModel');
 const dayjs = require('dayjs');
 
 const createCourse = async (req, res) => {
@@ -92,8 +92,108 @@ const getCourses = async (req, res) => {
     }
 };
 
+const updateCourse = async (req, res) => {
+    const { courseId } = req.params;
+    const courseData = req.body;
+    const currentUser = req.session.user;
+    if (!currentUser) {
+        return res.status(401).json({ message: 'Cần đăng nhập để có quyền truy cập.' });
+    }
+    if(currentUser.userRole != "Admin" && currentUser.userRole != "Instructor") {
+        return res.status(403).json({ message: 'Tài khoản này không có quyền truy cập.' });
+    }
+    try {
+        const newCourse = {};
+        let count = 0;
+        const course = await findCourseById(courseId);
+        if (!course) {
+            return res.status(404).json({ message: 'Khóa học không tồn tại.' });
+        }
+        if(currentUser.userRole == "Admin") {
+            if (!courseData.userId) {
+                newCourse.userId = null;
+            } else if (courseData.userId && course.userId != courseData.userId) {
+                newCourse.userId = courseData.userId;
+                count++;
+            } else {
+                newCourse.userId = course.userId;
+            }
+        } else {
+            if(currentUser.userRole == "Instructor" && currentUser.userId != course.userId) {
+                return res.status(403).json({ message: 'Tài khoản này không có quyền truy cập.' });
+            }
+            newCourse.userId = course.userId;
+        }
+        if (!courseData.courseCategoryId) {
+            newCourse.courseCategoryId = null;
+        } else if (courseData.courseCategoryId && course.courseCategoryId != courseData.courseCategoryId) {
+            newCourse.courseCategoryId = courseData.courseCategoryId;
+            count++;
+        } else {
+            newCourse.courseCategoryId = course.courseCategoryId;
+        }
+        if (courseData.courseName && course.courseName != courseData.courseName) {
+            newCourse.courseName = courseData.courseName;
+            count++;
+        } else {
+            newCourse.courseName = course.courseName;
+        }
+        if (courseData.courseDescription && course.courseDescription != courseData.courseDescription) {
+            newCourse.courseDescription = courseData.courseDescription;
+            count++;
+        } else {
+            newCourse.courseDescription = course.courseDescription;
+        }
+        const courseStartA = dayjs(course.courseStartDate);
+        const courseStartB = dayjs(courseData.courseStartDate);
+        if (courseData.courseStartDate && courseStartB.isValid() && courseStartA.isValid() &&
+            courseStartA.format('YYYY-MM-DD') !== courseStartB.format('YYYY-MM-DD')) {
+            newCourse.courseStartDate = courseStartB.format('YYYY-MM-DD');
+            count++;
+        } else {
+            newCourse.courseStartDate = courseStartA.isValid() ? courseStartA.format('YYYY-MM-DD') : '';
+        }
+        const courseEndA = dayjs(course.courseEndDate);
+        const courseEndB = dayjs(courseData.courseEndDate);
+        if (courseData.courseEndDate && courseEndB.isValid() && courseEndA.isValid() &&
+            courseEndA.format('YYYY-MM-DD') !== courseEndB.format('YYYY-MM-DD')) {
+            newCourse.courseEndDate = courseEndB.format('YYYY-MM-DD');
+            count++;
+        } else {
+            newCourse.courseEndDate = courseEndA.isValid() ? courseEndA.format('YYYY-MM-DD') : '';
+        }
+        if (courseData.courseMaxStudent && Number(course.courseMaxStudent) != Number(courseData.courseMaxStudent)) {
+            newCourse.courseMaxStudent = Number(courseData.courseMaxStudent);
+            count++;
+        } else {
+            newCourse.courseMaxStudent = Number(course.courseMaxStudent);
+        }
+        if (courseData.coursePrice && Number(course.coursePrice) != Number(courseData.coursePrice)) {
+            newCourse.coursePrice = Number(courseData.coursePrice);
+            count++;
+        } else {
+            newCourse.coursePrice = Number(course.coursePrice);
+        }
+        if (courseData.courseStatus && course.courseStatus != courseData.courseStatus) {
+            newCourse.courseStatus = courseData.courseStatus;
+            count++;
+        } else {
+            newCourse.courseStatus = course.courseStatus;
+        }
+        if (count == 0) {
+            return res.status(400).json({ message: 'Không có thay đổi để cập nhật.' });
+        }
+        await updateCourseDB(courseId, newCourse);
+        res.status(200).json({ message: 'Cập nhật thành công.', course: newCourse });
+    } catch (err) {
+        res.status(500).json({ message: 'Cập nhật thất bại.' });
+        console.error(`Lỗi: ${err.message}`);
+    }
+};
+
 module.exports = {
     createCourse,
     getCourse,
-    getCourses
+    getCourses,
+    updateCourse
 };
