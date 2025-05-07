@@ -1,5 +1,5 @@
 const express = require('express');
-const { createCourse, getCourse, getCourses, updateCourse } = require('../controllers/courseController');
+const { createCourse, getCourse, getCourses, updateCourse, deleteCourse } = require('../controllers/courseController');
 const router = express.Router();
 
 /**
@@ -537,5 +537,84 @@ router.put('/:courseId', updateCourse);
  *                   example: "Tìm khóa học thất bại."
  */
 router.get('/:courseId', getCourse);
+
+/**
+ * @swagger
+ * /api/course/{courseId}:
+ *   delete:
+ *     summary: Xóa khóa học (cần đăng nhập)
+ *     tags:
+ *       - Khóa học
+ *     parameters:
+ *       - in: path
+ *         name: courseId
+ *         required: true
+ *         description: ID của khóa học cần xóa
+ *         schema:
+ *           type: string
+ *           example: "COURSE123"
+ *     responses:
+ *       200:
+ *         description: Xóa khóa học thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Xóa khóa học thành công."
+ *       401:
+ *         description: Người dùng chưa đăng nhập
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Cần đăng nhập để có quyền truy cập."
+ *       403:
+ *         description: Người dùng không có quyền truy cập (không phải Admin hoặc Instructor sở hữu)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Tài khoản này không có quyền truy cập."
+ *       404:
+ *         description: Khóa học không tồn tại
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Khóa học không tồn tại."
+ *       422:
+ *         description: Không thể xóa khóa học đã được đăng ký hoặc đã công bố
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Không thể xóa khóa học đã được đăng ký."
+ *       500:
+ *         description: Lỗi phía máy chủ khi xóa khóa học
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Xóa khóa học thất bại."
+ */
+router.delete('/:courseId', deleteCourse);
 
 module.exports = router;

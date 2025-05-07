@@ -1,15 +1,17 @@
+import axios from 'axios';
+import dayjs from 'dayjs';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import styled from 'styled-components';
 import { useUser } from '../App';
-import Select from './Select';
-import { useState, useEffect } from 'react';
-import Button from './Button';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import calendarIcon from '../assets/images/calendar.svg';
 import instructorIcon from '../assets/images/instructor.svg';
 import registrantIcon from '../assets/images/registrant.svg';
 import sellIcon from '../assets/images/sell.svg';
-import calendarIcon from '../assets/images/calendar.svg';
-import dayjs from 'dayjs';
+import confirmDialog from '../utils/confirmDialog/confirmDialog';
+import Button from './Button';
+import Select from './Select';
 
 const Wrapper = styled.div`
   padding: 0 24px;
@@ -158,7 +160,27 @@ const Courses = () => {
 
   const handleButtonCourse = async (e, course) => {
     e.stopPropagation();
-    
+    const confirmed = await confirmDialog({
+      title: `Bạn có chắc muốn ${sessionUser.userRole != 'Student' ? 'xóa' : (course.enrollmentStatus === 'Enrolled' ? 'hủy đăng ký' : 
+      course.enrollmentStatus === 'Canceled' ? 'đăng ký lại' : 'đăng ký')} khóa học "${course.courseName}"?`,
+      confirmText: 'Xác nhận',
+      cancelText: 'Hủy',
+    });
+    if (confirmed) {
+      setWaitProcess(course.courseId);
+      let response;
+      try {
+        if(sessionUser.userRole != 'Student') {
+          response = await axios.delete(`http://localhost:5000/api/course/${course.courseId}`, { withCredentials: true });
+        }
+        getCourses();
+        toast.success(response.data.message, { position: 'top-right', autoClose: 3000 });
+      } catch (error) {
+        toast.error(error.response?.data?.message || 'Lỗi máy chủ.', { position: 'top-right', autoClose: 3000 });
+      } finally {
+        setWaitProcess(null);
+      }
+    }
   };
 
   return (

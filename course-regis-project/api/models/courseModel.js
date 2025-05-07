@@ -84,10 +84,25 @@ const updateCourseDB = async(courseId, courseData) => {
     }
 };
 
+const deleteCourseDB = async(courseId) => {
+    let connection;
+    try {
+        connection = await getConnection();
+        const query = `DELETE FROM courses WHERE courseId = ?`;
+        const [result] = await connection.query(query, [courseId]);
+        return result;
+    } catch (err) {
+        throw err;
+    } finally {
+        await closeConnection(connection);
+    }
+};
+
 module.exports = {
     createCourseDB,
     findCourseByName,
     findCourseById,
     findCourses,
-    updateCourseDB
+    updateCourseDB,
+    deleteCourseDB
 };
