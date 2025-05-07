@@ -98,11 +98,45 @@ const deleteCourseDB = async(courseId) => {
     }
 };
 
+const createEnrollment = async (studentId, courseId) => {
+    let connection;
+    try {
+        connection = await getConnection();
+        const enrollmentId = nanoid(20);
+        const query = 'INSERT INTO enrollments (enrollmentId, userId, courseId, enrollmentStatus) VALUES (?, ?, ?, ?)';
+        const values = [enrollmentId, studentId, courseId, 'Enrolled'];
+        const [result] = await connection.query(query, values);
+        return result;
+    } catch (err) {
+        throw err;
+    } finally {
+        await closeConnection(connection);
+    }
+};
+
+const updateEnrollmentStatus = async (studentId, courseId, status) => {
+    let connection;
+    try {
+        connection = await getConnection();
+        const enrollmentId = nanoid(20);
+        const query = 'UPDATE enrollments SET enrollmentStatus = ? WHERE userId = ? AND courseId = ?';
+        const values = [status, studentId, courseId];
+        const [result] = await connection.query(query, values);
+        return result;
+    } catch (err) {
+        throw err;
+    } finally {
+        await closeConnection(connection);
+    }
+};
+
 module.exports = {
     createCourseDB,
     findCourseByName,
     findCourseById,
     findCourses,
     updateCourseDB,
-    deleteCourseDB
+    deleteCourseDB,
+    createEnrollment,
+    updateEnrollmentStatus
 };
