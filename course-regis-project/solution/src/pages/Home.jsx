@@ -1,7 +1,8 @@
 import styled from 'styled-components';
+import { useUser } from '../App';
+import Courses from '../components/Courses';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
-import { useUser } from '../App';
 
 const Wrapper = styled.div`
   display: flex;
@@ -12,7 +13,9 @@ const Wrapper = styled.div`
 const Main = styled.main`
   width: 1248px;
   flex: 1;
-  margin: 120px auto 48px auto;
+  margin: 100px auto 24px auto;
+  position: relative;
+  z-index: 0;
 `;
 
 const Home = () => {
@@ -20,7 +23,9 @@ const Home = () => {
   return (
     <Wrapper>
         <Header sessionUser={sessionUser}/>
-        <Main></Main>
+        <Main>
+          <Courses />
+        </Main>
         <Footer />
     </Wrapper>
   );

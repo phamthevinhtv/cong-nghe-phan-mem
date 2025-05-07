@@ -1,5 +1,5 @@
 const express = require('express');
-const { createCourse, getCourse } = require('../controllers/courseController');
+const { createCourse, getCourse, getCourses } = require('../controllers/courseController');
 const router = express.Router();
 
 /**
@@ -144,6 +144,107 @@ const router = express.Router();
  *                   example: "Tạo khóa học thất bại."
  */
 router.post('/create-course', createCourse);
+
+/**
+ * @swagger
+ * /api/course/courses:
+ *   get:
+ *     summary: Lấy danh sách khóa học (cần đăng nhập)
+ *     tags:
+ *       - Khóa học
+ *     responses:
+ *       200:
+ *         description: Lấy danh sách khóa học thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 courses:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       courseId:
+ *                         type: string
+ *                         example: "COURSE123"
+ *                       courseName:
+ *                         type: string
+ *                         example: "Khóa học giao tiếp"
+ *                       courseDescription:
+ *                         type: string
+ *                         example: "Khóa học giúp cải thiện kỹ năng giao tiếp"
+ *                       courseCategoryId:
+ *                         type: string
+ *                         nullable: true
+ *                         example: null
+ *                       courseStartDate:
+ *                         type: string
+ *                         format: date
+ *                         example: "2025-05-15"
+ *                       courseEndDate:
+ *                         type: string
+ *                         format: date
+ *                         example: "2025-05-29"
+ *                       courseMaxStudent:
+ *                         type: integer
+ *                         example: 30
+ *                       coursePrice:
+ *                         type: number
+ *                         example: 0
+ *                       courseStatus:
+ *                         type: string
+ *                         enum: ["Draft", "Publish"]
+ *                         example: "Publish"
+ *                       userId:
+ *                         type: string
+ *                         nullable: true
+ *                         example: null
+ *                       totalEnrollments:
+ *                         type: integer
+ *                         example: 10
+ *       401:
+ *         description: Người dùng chưa đăng nhập
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Cần đăng nhập để có quyền truy cập."
+ *       403:
+ *         description: Người dùng không có quyền truy cập (không phải Admin, Instructor, hoặc Student)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Tài khoản này không có quyền truy cập."
+ *       404:
+ *         description: Không tìm thấy khóa học nào
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Khóa học không tồn tại."
+ *       500:
+ *         description: Lỗi phía máy chủ khi lấy danh sách khóa học
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Tìm khóa học thất bại."
+ */
+router.get('/courses', getCourses);
 
 /**
  * @swagger
