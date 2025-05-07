@@ -1,4 +1,4 @@
-const { createCourseDB, findCourseByName, findCourseById, findCourses, updateCourseDB } = require('../models/courseModel');
+const { createCourseDB, findCourseByName, findCourseById, findCourses, updateCourseDB, deleteCourseDB } = require('../models/courseModel');
 const dayjs = require('dayjs');
 
 const createCourse = async (req, res) => {
@@ -191,9 +191,40 @@ const updateCourse = async (req, res) => {
     }
 };
 
+const deleteCourse = async (req, res) => {
+    const { courseId } = req.params;
+    const currentUser = req.session.user;
+    if (!currentUser) {
+        return res.status(401).json({ message: 'Cần đăng nhập để có quyền truy cập.' });
+    }
+    if(currentUser.userRole != "Admin" && currentUser.userRole != "Instructor") {
+        return res.status(403).json({ message: 'Tài khoản này không có quyền truy cập.' });
+    }
+    try {
+        const course = await findCourseById(courseId);
+        if (!course) {
+            return res.status(404).json({ message: 'Khóa học không tồn tại.' });
+        }
+        if((currentUser.userRole == "Instructor" && course.userId != currentUser.userId)) {
+            return res.status(403).json({ message: 'Tài khoản này không có quyền truy cập.' });
+        } else if(course.totalEnrollments > 0) {
+            return res.status(422).json({ message: 'Không thể xóa khóa học đã được đăng ký.' });            
+        } if(course.courseStatus == 'Publish') {
+            return res.status(422).json({ message: 'Không thể xóa khóa học đã được công bố.' });
+        } else {
+            await deleteCourseDB(course.courseId);
+            res.status(200).json({ message: 'Xóa khóa học thành công.' });
+        }
+    } catch (err) {
+        res.status(500).json({ message: 'Xóa khóa học thất bại.' });
+        console.error(`Lỗi: ${err.message}`);
+    }
+};
+
 module.exports = {
     createCourse,
     getCourse,
     getCourses,
-    updateCourse
+    updateCourse,
+    deleteCourse
 };
