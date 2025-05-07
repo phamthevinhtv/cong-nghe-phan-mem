@@ -170,7 +170,15 @@ const Courses = () => {
       setWaitProcess(course.courseId);
       let response;
       try {
-        if(sessionUser.userRole != 'Student') {
+        if(sessionUser.userRole == 'Student') {
+          if (course.enrollmentStatus === 'Enrolled') {
+            response = await axios.post('http://localhost:5000/api/course/cancel-enroll-course',
+            { courseId: course.courseId, userId: sessionUser.userId }, { withCredentials: true });
+          } else {
+            response = await axios.post('http://localhost:5000/api/course/enroll-course',
+            { courseId: course.courseId, userId: sessionUser.userId }, { withCredentials: true });
+          }
+        } else {
           response = await axios.delete(`http://localhost:5000/api/course/${course.courseId}`, { withCredentials: true });
         }
         getCourses();
