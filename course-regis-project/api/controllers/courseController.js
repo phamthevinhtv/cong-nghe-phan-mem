@@ -1,4 +1,5 @@
-const { createCourseDB, findCourseByName, findCourseById, findCourses, updateCourseDB, deleteCourseDB } = require('../models/courseModel');
+const { createCourseDB, findCourseByName, findCourseById, findCourses, updateCourseDB, deleteCourseDB, createEnrollment, updateEnrollmentStatus } = require('../models/courseModel');
+const { findUserById } = require('../models/userModel');
 const dayjs = require('dayjs');
 
 const createCourse = async (req, res) => {
@@ -221,10 +222,85 @@ const deleteCourse = async (req, res) => {
     }
 };
 
+const enrollmentCourse = async (req, res) => {
+    const { courseId, userId } = req.body;
+    const currentUser = req.session.user;
+    let studentId = '';
+    if (!currentUser) {
+        return res.status(401).json({ message: 'Cần đăng nhập để có quyền truy cập.' });
+    }
+    if (currentUser.userRole != "Student" && currentUser.userRole != "Admin") {
+        return res.status(403).json({ message: 'Tài khoản này không có quyền truy cập.' });
+    }
+    if (currentUser.userRole == "Admin") {
+        studentId = userId;
+    } else {
+        studentId = currentUser.userId;
+    }
+    try {
+        const course = await findCourseById(courseId);
+        if (!course || !course.userId || course.courseStatus != 'Publish') {
+            return res.status(404).json({ message: 'Khóa học không tồn tại.' });
+        }
+        const student = await findUserById(studentId);
+        if (!student) {
+            return res.status(404).json({ message: 'Học viên không tồn tại.' });
+        }
+        await createEnrollment(studentId, courseId);
+        res.status(201).json({ message: 'Đăng ký khóa học thành công.' });
+    } catch (err) {
+        if (err.code === 'ER_DUP_ENTRY') {
+            try {
+                await updateEnrollmentStatus(studentId, courseId, "Enrolled");
+                res.status(201).json({ message: 'Đăng ký lại khóa học thành công.' });
+            } catch (err) {
+                throw err;
+            }
+        } else {
+            res.status(500).json({ message: 'Đăng ký khóa học thất bại.' });
+        }
+        console.error(`Lỗi: ${err.message}`);
+    }
+};
+
+const cancelEnrollmentCourse = async (req, res) => {
+    const { courseId, userId } = req.body;
+    const currentUser = req.session.user;
+    let studentId = '';
+    if (!currentUser) {
+        return res.status(401).json({ message: 'Cần đăng nhập để có quyền truy cập.' });
+    }
+    if (currentUser.userRole !== "Student" && currentUser.userRole !== "Admin") {
+        return res.status(403).json({ message: 'Tài khoản này không có quyền truy cập.' });
+    }
+    if (currentUser.userRole === "Admin") {
+        studentId = userId;
+    } else {
+        studentId = currentUser.userId;
+    }
+    try {
+        const course = await findCourseById(courseId);
+        if (!course || (currentUser.userRole === "Student" && (course.studentId !== studentId || course.enrollmentStatus !== 'Enrolled'))) {
+            return res.status(404).json({ message: 'Khóa học không tồn tại.' });
+        }
+        const student = await findUserById(studentId);
+        if (!student) {
+            return res.status(404).json({ message: 'Học viên không tồn tại.' });
+        }
+        await updateEnrollmentStatus(studentId, courseId, "Canceled");
+        res.status(201).json({ message: 'Hủy đăng ký khóa học thành công.' });
+    } catch (err) {
+        res.status(500).json({ message: 'Hủy đăng ký khóa học thất bại.' });
+        console.error(`Lỗi: ${err.message}`);
+    }
+};
+
 module.exports = {
     createCourse,
     getCourse,
     getCourses,
     updateCourse,
-    deleteCourse
+    deleteCourse,
+    enrollmentCourse,
+    cancelEnrollmentCourse
 };

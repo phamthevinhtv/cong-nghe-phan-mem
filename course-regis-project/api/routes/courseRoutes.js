@@ -1,5 +1,5 @@
 const express = require('express');
-const { createCourse, getCourse, getCourses, updateCourse, deleteCourse } = require('../controllers/courseController');
+const { createCourse, getCourse, getCourses, updateCourse, deleteCourse, enrollmentCourse, cancelEnrollmentCourse } = require('../controllers/courseController');
 const router = express.Router();
 
 /**
@@ -537,6 +537,162 @@ router.put('/:courseId', updateCourse);
  *                   example: "Tìm khóa học thất bại."
  */
 router.get('/:courseId', getCourse);
+
+/**
+ * @swagger
+ * /api/course/enroll-course:
+ *   post:
+ *     summary: Đăng ký khóa học (cần đăng nhập)
+ *     tags:
+ *       - Khóa học
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - courseId
+ *             properties:
+ *               courseId:
+ *                 type: string
+ *                 example: "COURSE123"
+ *               userId:
+ *                 type: string
+ *                 nullable: true
+ *                 example: "USER123"
+ *                 description: Chỉ cần khi người dùng là Admin, để đăng ký cho học viên khác
+ *     responses:
+ *       201:
+ *         description: Đăng ký khóa học thành công hoặc đăng ký lại thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Đăng ký khóa học thành công."
+ *       401:
+ *         description: Người dùng chưa đăng nhập
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Cần đăng nhập để có quyền truy cập."
+ *       403:
+ *         description: Người dùng không có quyền truy cập (không phải Student hoặc Admin)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Tài khoản này không có quyền truy cập."
+ *       404:
+ *         description: Khóa học hoặc học viên không tồn tại
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Khóa học không tồn tại."
+ *       500:
+ *         description: Lỗi phía máy chủ khi đăng ký khóa học
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Đăng ký khóa học thất bại."
+ */
+router.post('/enroll-course', enrollmentCourse);
+
+/**
+ * @swagger
+ * /api/course/cancel-enroll-course:
+ *   post:
+ *     summary: Hủy đăng ký khóa học (cần đăng nhập)
+ *     tags:
+ *       - Khóa học
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - courseId
+ *             properties:
+ *               courseId:
+ *                 type: string
+ *                 example: "COURSE123"
+ *               userId:
+ *                 type: string
+ *                 nullable: true
+ *                 example: "USER123"
+ *                 description: Chỉ cần khi người dùng là Admin, để hủy đăng ký cho học viên khác
+ *     responses:
+ *       201:
+ *         description: Hủy đăng ký khóa học thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Hủy đăng ký khóa học thành công."
+ *       401:
+ *         description: Người dùng chưa đăng nhập
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Cần đăng nhập để có quyền truy cập."
+ *       403:
+ *         description: Người dùng không có quyền truy cập (không phải Student hoặc Admin)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Tài khoản này không có quyền truy cập."
+ *       404:
+ *         description: Khóa học hoặc học viên không tồn tại
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Khóa học không tồn tại."
+ *       500:
+ *         description: Lỗi phía máy chủ khi hủy đăng ký khóa học
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Hủy đăng ký khóa học thất bại."
+ */
+router.post('/cancel-enroll-course', cancelEnrollmentCourse);
 
 /**
  * @swagger
