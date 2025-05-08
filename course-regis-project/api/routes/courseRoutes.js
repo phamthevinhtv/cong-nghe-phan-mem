@@ -1,5 +1,5 @@
 const express = require('express');
-const { createCourse, getCourse, getCourses, updateCourse, deleteCourse, enrollmentCourse, cancelEnrollmentCourse } = require('../controllers/courseController');
+const { createCourse, getCourse, getCourses, updateCourse, deleteCourse, enrollmentCourse, cancelEnrollmentCourse, getStudentsEnrolled } = require('../controllers/courseController');
 const router = express.Router();
 
 /**
@@ -772,5 +772,85 @@ router.post('/cancel-enroll-course', cancelEnrollmentCourse);
  *                   example: "Xóa khóa học thất bại."
  */
 router.delete('/:courseId', deleteCourse);
+
+/**
+ * @swagger
+ * /api/course/{courseId}/students:
+ *   get:
+ *     summary: Lấy danh sách học viên đã đăng ký khóa học (cần đăng nhập)
+ *     tags:
+ *       - Khóa học
+ *     parameters:
+ *       - in: path
+ *         name: courseId
+ *         required: true
+ *         description: ID của khóa học
+ *         schema:
+ *           type: string
+ *           example: "COURSE123"
+ *     responses:
+ *       200:
+ *         description: Lấy danh sách học viên thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 students:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       userId:
+ *                         type: string
+ *                         example: "USER123"
+ *                       fullName:
+ *                         type: string
+ *                         example: "Nguyễn Văn A"
+ *                       email:
+ *                         type: string
+ *                         example: "student@example.com"
+ *       401:
+ *         description: Người dùng chưa đăng nhập
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Cần đăng nhập để có quyền truy cập."
+ *       403:
+ *         description: Người dùng không có quyền truy cập (không phải Admin hoặc Instructor)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Tài khoản này không có quyền truy cập."
+ *       404:
+ *         description: Không tìm thấy học viên nào đăng ký khóa học
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Không tồn tại học viên đăng ký khóa học này."
+ *       500:
+ *         description: Lỗi phía máy chủ khi lấy danh sách học viên
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Tìm học viên thất bại."
+ */
+router.get('/:courseId/students', getStudentsEnrolled);
 
 module.exports = router;
