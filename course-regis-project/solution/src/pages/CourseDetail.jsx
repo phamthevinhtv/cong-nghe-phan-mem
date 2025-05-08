@@ -27,7 +27,6 @@ const Main = styled.main`
 const ButtonBox = styled.div`
   display: flex;
   gap: 24px;
-  margin-top: 12px;
   justify-content: right;
 
   @media (max-width: 500px) {
@@ -106,10 +105,11 @@ const CourseDetail = () => {
           <ViewCourse form={form} isUpdate={true}/>
         </div>
         <ButtonBox>
-          <ButtonMod style={{ display: sessionUser.userRole != 'Student' ? (isView ? 'block' : 'none') : 'none' }} 
+          <ButtonMod backgroundColor='#dcdcdc' style={{ display: sessionUser.userRole != 'Student' ? (isView ? 'block' : 'none') : 'none', color: "var(--text-color)" }} onClick={() => navigate(-1)}>Trở lại</ButtonMod>
+          <ButtonMod style={{ display: sessionUser.userRole != 'Student' ? (isView ? 'block' : 'none') : 'none' }}
           backgroundColor='var(--success-color)' onClick={() => setIsView(false)}>
             Cập nhật
-        </ButtonMod>
+          </ButtonMod>
         </ButtonBox>
         <div style={{ display: isView ? 'none' : 'block' }}>
           <CourseEditor form={form} setForm={setForm} mode='Update' setIsView={setIsView} />

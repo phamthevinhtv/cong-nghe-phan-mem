@@ -79,8 +79,6 @@ const Profile = () => {
     userGender: '',
     userPhoneNumber: '',
     userAddress: '',
-    userRole: '',
-    userStatus: ''
   });
 
   const formRef = useRef();
@@ -98,8 +96,6 @@ const Profile = () => {
       userGender: form.userGender.trim(),
       userPhoneNumber: form.userPhoneNumber.trim(),
       userAddress: form.userAddress.trim(),
-      userRole: form.userRole.trim(),
-      userStatus: form.userStatus.trim(),
     };
     const emptyFields = Object.entries(trimmedForm)
       .filter(([key, value]) => !value)
@@ -148,8 +144,6 @@ const Profile = () => {
           userGender: user.userGender || '',
           userPhoneNumber: user.userPhoneNumber || '',
           userAddress: user.userAddress || '',
-          userRole: user.userRole || 'Student',
-          userStatus: user.userStatus || 'Active'
         });
       }
     } catch (err) {

@@ -130,6 +130,22 @@ const updateEnrollmentStatus = async (studentId, courseId, status) => {
     }
 };
 
+const findStudentsByCourseId = async (courseId) => {
+    let connection;
+    try {
+        connection = await getConnection();
+        const query = `SELECT u.userId, u.userFullName, u.userEmail, u.userGender, u.userPhoneNumber, u.userAddress 
+        FROM users u JOIN enrollments e ON u.userId = e.userId WHERE e.courseId = ? AND 
+        (e.enrollmentStatus = 'Enrolled' OR e.enrollmentStatus = 'Completed')`;
+        const [rows] = await connection.query(query, [courseId]);
+        return rows.length > 0 ? rows : [];
+    } catch (err) {
+        throw err;
+    } finally {
+        await closeConnection(connection);
+    }
+};
+
 module.exports = {
     createCourseDB,
     findCourseByName,
@@ -138,5 +154,6 @@ module.exports = {
     updateCourseDB,
     deleteCourseDB,
     createEnrollment,
-    updateEnrollmentStatus
+    updateEnrollmentStatus,
+    findStudentsByCourseId
 };

@@ -86,7 +86,7 @@ const updateUserDB = async(userId, userData) => {
         connection = await getConnection();
         const { userFullName, userEmail, userPassword, userGender, userPhoneNumber, userAddress, userRole, userStatus } = userData;
         const query = 'UPDATE users SET userFullName = ?, userEmail = ?, userPassword = ?, userGender = ?, userPhoneNumber = ?, userAddress = ?, userRole = ?, userStatus = ? WHERE userId = ?';
-        const values = [userFullName, userEmail, userPassword, userGender, userPhoneNumber, userAddress, userRole || 'Student', userStatus || 'Active', userId];
+        const values = [userFullName, userEmail, userPassword, userGender, userPhoneNumber, userAddress, userRole, userStatus, userId];
         const [result] = await connection.query(query, values);
         return result;
     } catch (err) {

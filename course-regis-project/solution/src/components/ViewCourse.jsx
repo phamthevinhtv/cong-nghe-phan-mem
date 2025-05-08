@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 import dayjs from 'dayjs';
+import Link from './Link';
+import { useUser } from '../App';
 
 const H1 = styled.h1`
   font-size: 3.2rem;
@@ -25,6 +27,8 @@ const B = styled.b`
 `;
 
 const ViewCourse = ({ form }) => {
+  const { sessionUser } = useUser();
+
   return (
     <>
         <H1>{form.courseName || 'Tên khóa học'}</H1>
@@ -36,7 +40,9 @@ const ViewCourse = ({ form }) => {
                 {form.courseStartDate && dayjs(form.courseStartDate).isValid() ? dayjs(form.courseStartDate).format('DD/MM/YYYY') : '.../.../...'} &nbsp;đến&nbsp; 
                 {form.courseEndDate && dayjs(form.courseEndDate).isValid() ? dayjs(form.courseEndDate).format('DD/MM/YYYY') : '.../.../...'}
             </p>
-            <p><B>Số lượng học viên đã đăng ký:</B> {form.totalEnrollments}/{form.courseMaxStudent}</p>
+            <p><B>Số lượng học viên đã đăng ký:</B> {form.totalEnrollments}/{form.courseMaxStudent}&nbsp;
+            <i style={{ display: sessionUser.userRole != 'Student' ? 'inline-block' : 'none'}}><Link to="/students-enrolled" color='var(--primary-color)' hoverUnderline="true">(Xem danh sách)</Link></i>
+            </p>
             <p><B>Giá khóa học:</B> {form.coursePrice?.toLocaleString()} VND</p>
         </Info>
         <Hr />

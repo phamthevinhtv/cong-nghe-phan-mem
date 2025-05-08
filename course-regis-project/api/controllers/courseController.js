@@ -1,4 +1,4 @@
-const { createCourseDB, findCourseByName, findCourseById, findCourses, updateCourseDB, deleteCourseDB, createEnrollment, updateEnrollmentStatus } = require('../models/courseModel');
+const { createCourseDB, findCourseByName, findCourseById, findCourses, updateCourseDB, deleteCourseDB, createEnrollment, updateEnrollmentStatus, findStudentsByCourseId } = require('../models/courseModel');
 const { findUserById } = require('../models/userModel');
 const dayjs = require('dayjs');
 
@@ -295,6 +295,27 @@ const cancelEnrollmentCourse = async (req, res) => {
     }
 };
 
+const getStudentsEnrolled = async (req, res) => {
+    const { courseId } = req.params;
+    const currentUser = req.session.user;
+    if (!currentUser) {
+        return res.status(401).json({ message: 'Cần đăng nhập để có quyền truy cập.' });
+    }
+    if (currentUser.userRole != "Admin" && currentUser.userRole != "Instructor") {
+        return res.status(403).json({ message: 'Tài khoản này không có quyền truy cập.' });
+    }
+    try {
+        const students = await findStudentsByCourseId(courseId);
+        if (students.length <= 0) {
+            return res.status(404).json({ message: 'Không tồn tại học viên đăng ký khóa học này.' });
+        }
+        res.status(200).json({ students: students });
+    } catch (err) {
+        res.status(500).json({ message: 'Tìm học viên thất bại.' });
+        console.error(`Lỗi: ${err.message}`);
+    }
+};
+
 module.exports = {
     createCourse,
     getCourse,
@@ -302,5 +323,6 @@ module.exports = {
     updateCourse,
     deleteCourse,
     enrollmentCourse,
-    cancelEnrollmentCourse
+    cancelEnrollmentCourse,
+    getStudentsEnrolled
 };
