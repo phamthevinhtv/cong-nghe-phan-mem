@@ -1,4 +1,4 @@
-const { createCourseDB, findCourseByName, findCourseById, findCourses, updateCourseDB, deleteCourseDB, createEnrollment, updateEnrollmentStatus, findStudentsByCourseId } = require('../models/courseModel');
+const { createCourseDB, findCourseByName, findCourseById, findCourses, updateCourseDB, deleteCourseDB, createEnrollment, updateEnrollmentStatus, findStudentsByCourseId, findCourseCategories, findCourseCategoryByName, createCourseCategoryDB } = require('../models/courseModel');
 const { findUserById } = require('../models/userModel');
 const dayjs = require('dayjs');
 
@@ -316,6 +316,48 @@ const getStudentsEnrolled = async (req, res) => {
     }
 };
 
+const createCourseCategory = async (req, res) => {
+    const { courseCateName } = req.body;
+    const currentUser = req.session.user;
+    if (!currentUser) {
+        return res.status(401).json({ message: 'Cần đăng nhập để có quyền truy cập.' });
+    }
+    if (currentUser.userRole != "Admin" && currentUser.userRole != "Instructor") {
+        return res.status(403).json({ message: 'Tài khoản này không có quyền truy cập.' });
+    }
+    try {
+        const course = await findCourseCategoryByName(courseCateName);
+        if (course) {
+            return res.status(409).json({ message: 'Tên danh mục khóa học đã tồn tại.' });
+        }
+        await createCourseCategoryDB(courseCateName);
+        res.status(201).json({ message: 'Tạo danh mục khóa học thành công.', courseCateName: courseCateName });
+    } catch (err) {
+        res.status(500).json({ message: 'Tạo danh mục khóa học thất bại.' });
+        console.error(`Lỗi: ${err.message}`);
+    }
+};
+
+const getCourseCategories = async (req, res) => {
+    const currentUser = req.session.user;
+    if (!currentUser) {
+        return res.status(401).json({ message: 'Cần đăng nhập để có quyền truy cập.' });
+    }
+    if (currentUser.userRole != "Admin" && currentUser.userRole != "Instructor") {
+        return res.status(403).json({ message: 'Tài khoản này không có quyền truy cập.' });
+    }
+    try {
+        let courseCategories = await findCourseCategories();
+        if (courseCategories.length <= 0) {
+            return res.status(404).json({ message: 'Danh mục khóa học không tồn tại.' });
+        }
+        res.status(200).json({ courseCategories: courseCategories });
+    } catch (err) {
+        res.status(500).json({ message: 'Tìm danh mục khóa học thất bại.' });
+        console.error(`Lỗi: ${err.message}`);
+    }
+};
+
 module.exports = {
     createCourse,
     getCourse,
@@ -324,5 +366,7 @@ module.exports = {
     deleteCourse,
     enrollmentCourse,
     cancelEnrollmentCourse,
-    getStudentsEnrolled
+    getStudentsEnrolled,
+    createCourseCategory,
+    getCourseCategories
 };

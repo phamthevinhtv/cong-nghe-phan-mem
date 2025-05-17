@@ -146,6 +146,50 @@ const findStudentsByCourseId = async (courseId) => {
     }
 };
 
+const findCourseCategoryByName = async (courseCategoryName) => {
+    let connection;
+    try {
+        connection = await getConnection();
+        const query = 'SELECT * FROM courseCategories WHERE courseCategoryName = ?';
+        const [rows] = await connection.query(query, [courseCategoryName]);
+        return rows.length > 0 ? rows[0] : null;
+    } catch (err) {
+        throw err;
+    } finally {
+        await closeConnection(connection);
+    }
+};
+
+const createCourseCategoryDB = async (courseCategoryName) => {
+    let connection;
+    try {
+        connection = await getConnection();
+        const courseCategoryId = nanoid(20);
+        const query = `INSERT INTO courseCategories (courseCategoryId, courseCategoryName) VALUES (?, ?)`;
+        const values = [courseCategoryId, courseCategoryName];
+        const [result] = await connection.query(query, values);
+        return result;
+    } catch (err) {
+        throw err;
+    } finally {
+        await closeConnection(connection);
+    }
+};
+
+const findCourseCategories = async () => {
+    let connection;
+    try {
+        connection = await getConnection();
+        const query = `SELECT * FROM courseCategories`;
+        const [rows] = await connection.query(query);
+        return rows.length > 0 ? rows : [];
+    } catch (err) {
+        throw err;
+    } finally {
+        await closeConnection(connection);
+    }
+};
+
 module.exports = {
     createCourseDB,
     findCourseByName,
@@ -155,5 +199,8 @@ module.exports = {
     deleteCourseDB,
     createEnrollment,
     updateEnrollmentStatus,
-    findStudentsByCourseId
+    findStudentsByCourseId,
+    findCourseCategoryByName,
+    createCourseCategoryDB,
+    findCourseCategories
 };

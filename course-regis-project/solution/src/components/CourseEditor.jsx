@@ -29,10 +29,11 @@ const FormChild = styled.div`
 
 const InlineFlex = styled.div`
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 6px;
   width: 100%;
   z-index: 0;
+  flex: 1;
 `;
 
 const ButtonBox = styled.div`
@@ -54,10 +55,35 @@ const ButtonMod = styled(Button)`
   }
 `;
 
+const Overlay = styled.div`
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color:rgba(0, 0, 0, 0.3);
+    z-index: 10;
+    display: flex;
+    padding: 24px;
+`;
+
+const ContainerCreCourseCate = styled.div`
+  width: 400px;
+  margin: auto;
+  background-color: var(--white-color);
+  border-radius: 6px;
+  border: var(--border-normal);
+  padding: 24px;
+`;
+
 const CourseEditor = ({ form, setForm, mode, setIsView }) => {
   const formRef = useRef();
   const [waitProcess, setWaitProcess] = useState(false); 
+  const [waitCreCourseCate, setWaitCreCourseCate] = useState(false); 
   const [isUpdate, setIsUpdate] = useState(false);
+  const [isOpenCreCourseCate, setIsOpenCreCourseCate] = useState(false);
+  const [courseCategories, setCourseCategories] = useState([]); 
+  const [courseCateName, setCourseCateName] = useState('');
 
   useEffect(() => {
     if(mode == 'Create') {
@@ -65,10 +91,15 @@ const CourseEditor = ({ form, setForm, mode, setIsView }) => {
     } else {
       setIsUpdate(true);
     }
+    getCourseCategories();
   }, [mode]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleCourseCateNameChange = (e) => {
+    setCourseCateName(e.target.value);
   };
 
   const statuss = [
@@ -144,8 +175,64 @@ const CourseEditor = ({ form, setForm, mode, setIsView }) => {
     }
   }
 
+  const handleBtnCreCourseCate = () => {
+    setIsOpenCreCourseCate(true);
+    document.querySelector('main').style.zIndex = '11';
+  }
+
+  const handleCloseCreCourseCate = () => {
+    setIsOpenCreCourseCate(false);
+    document.querySelector('main').style.zIndex = '0';
+  }
+
+  const handleSubmitCreCourseCate = async (e) => {
+    e.preventDefault();
+    if (courseCateName.length <= 0) {
+      toast.warning('Vui lòng nhập tên danh mục khóa học.', { position: 'top-right', autoClose: 3000 });
+      emptyInputWarning('courseCateName');
+      return;
+    }
+    setWaitCreCourseCate(true);
+    try {
+        const response = await axios.post('http://localhost:5000/api/course/create-course-category', { courseCateName }, { withCredentials: true });
+        toast.success(response.data.message, { position: 'top-right', autoClose: 3000 });
+        getCourseCategories();
+    } catch (error) {
+        toast.error(error.response?.data?.message || 'Lỗi máy chủ.', { position: 'top-right', autoClose: 3000 });
+    } finally {
+        setWaitCreCourseCate(false);
+    }
+  }
+
+  const getCourseCategories = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5000/api/course/course-categories`, { withCredentials: true });
+      if (response.data.courseCategories) {
+        const format = response.data.courseCategories.map(cat => ({
+          label: cat.courseCategoryName,
+          value: cat.courseCategoryId
+        }));
+        setCourseCategories(format);
+      }
+    } catch (err) {
+      console.error('Lỗi khi lấy danh mục khóa học:', err);
+    }
+  };
+
   return (
       <>
+        <Overlay onClick={handleCloseCreCourseCate} style={{ display: isOpenCreCourseCate ? 'flex' : 'none' }}>
+          <ContainerCreCourseCate onClick={(e) => e.stopPropagation()}>
+            <form onSubmit={handleSubmitCreCourseCate}>
+              <Label gap="2px" margin="0 0 12px 0">
+                Tên danh mục khóa học:
+                <Input name="courseCateName" value={courseCateName} onChange={handleCourseCateNameChange} placeholder="Nhập tên danh mục khóa học" />
+              </Label>
+              <Button disabled={waitCreCourseCate} margin="12px 0 0 0">{ waitCreCourseCate ? "Đang tạo..." : "Tạo" }</Button>
+            </form>
+            <Button backgroundColor='#dcdcdc' onClick={handleCloseCreCourseCate} style={{ color: "var(--text-color)" }} margin="12px 0 0 0">Trở lại</Button>
+          </ContainerCreCourseCate>
+        </Overlay>
         <H2>Thông tin khóa học</H2>
         <form ref={formRef} onSubmit={handleSubmit}>
             <Label style={{ flex: '1' }} gap="2px" margin='0 0 12px 0'>
@@ -160,19 +247,20 @@ const CourseEditor = ({ form, setForm, mode, setIsView }) => {
                 onChange={handleChange}
             />
             <FormChild>
-                <Label style={{ flex: '1' }} margin='0 0 12px 0'>
+                <InlineFlex>
+                  <Label style={{ flex: '1' }} margin='0 0 12px 0'>
                     <Label htmlFor="courseCategoryId" margin='0 0 2px 0'>Tên danh mục:</Label>
-                    <InlineFlex>
-                        <Select
-                            name="courseCategoryId"
-                            options={[]}
-                            value={form.courseCategoryId}
-                            onChange={handleChange}
-                            placeholder="Chọn tên danh mục"
-                        />
-                        <Button type='button' backgroundColor='var(--success-color)' width='60px'>Thêm</Button>
-                    </InlineFlex>
-                </Label>
+                    <Select
+                      name="courseCategoryId"
+                      options={courseCategories}
+                      value={form.courseCategoryId}
+                      onChange={handleChange}
+                      placeholder="Chọn tên danh mục"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </Label>
+                  <Button type='button' margin='0 0 12px 0' backgroundColor='var(--success-color)' width='60px' onClick={handleBtnCreCourseCate}>Thêm</Button>
+                </InlineFlex>
                 <Label style={{ flex: '1' }} gap="2px" margin='0 0 12px 0'>
                     Số lượng học viên:
                     <Input type="number" min="0" step="1" name="courseMaxStudent" value={form.courseMaxStudent} onChange={handleChange} />

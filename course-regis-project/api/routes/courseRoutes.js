@@ -1,5 +1,5 @@
 const express = require('express');
-const { createCourse, getCourse, getCourses, updateCourse, deleteCourse, enrollmentCourse, cancelEnrollmentCourse, getStudentsEnrolled } = require('../controllers/courseController');
+const { createCourse, getCourse, getCourses, updateCourse, deleteCourse, enrollmentCourse, cancelEnrollmentCourse, getStudentsEnrolled, createCourseCategory, getCourseCategories } = require('../controllers/courseController');
 const router = express.Router();
 
 /**
@@ -245,6 +245,75 @@ router.post('/create-course', createCourse);
  *                   example: "Tìm khóa học thất bại."
  */
 router.get('/courses', getCourses);
+
+/**
+ * @swagger
+ * /api/course/course-categories:
+ *   get:
+ *     summary: Lấy danh sách danh mục khóa học (cần đăng nhập)
+ *     tags:
+ *       - Danh mục khóa học
+ *     responses:
+ *       200:
+ *         description: Lấy danh sách thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 courseCategories:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         example: "CAT001"
+ *                       courseCateName:
+ *                         type: string
+ *                         example: "Lập trình Web"
+ *       401:
+ *         description: Người dùng chưa đăng nhập
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Cần đăng nhập để có quyền truy cập."
+ *       403:
+ *         description: Người dùng không có quyền truy cập
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Tài khoản này không có quyền truy cập."
+ *       404:
+ *         description: Không tìm thấy danh mục nào
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Danh mục khóa học không tồn tại."
+ *       500:
+ *         description: Lỗi phía máy chủ khi lấy danh mục
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Tìm danh mục khóa học thất bại."
+ */
+router.get('/course-categories', getCourseCategories);
 
 /**
  * @swagger
@@ -693,6 +762,82 @@ router.post('/enroll-course', enrollmentCourse);
  *                   example: "Hủy đăng ký khóa học thất bại."
  */
 router.post('/cancel-enroll-course', cancelEnrollmentCourse);
+
+/**
+ * @swagger
+ * /api/course/create-course-category:
+ *   post:
+ *     summary: Tạo danh mục khóa học (cần đăng nhập)
+ *     tags:
+ *       - Danh mục khóa học
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - courseCateName
+ *             properties:
+ *               courseCateName:
+ *                 type: string
+ *                 example: "Lập trình Web"
+ *     responses:
+ *       201:
+ *         description: Tạo danh mục khóa học thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Tạo danh mục khóa học thành công."
+ *                 courseCateName:
+ *                   type: string
+ *                   example: "Lập trình Web"
+ *       401:
+ *         description: Người dùng chưa đăng nhập
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Cần đăng nhập để có quyền truy cập."
+ *       403:
+ *         description: Người dùng không có quyền truy cập
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Tài khoản này không có quyền truy cập."
+ *       409:
+ *         description: Tên danh mục đã tồn tại
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Tên danh mục khóa học đã tồn tại."
+ *       500:
+ *         description: Lỗi phía máy chủ khi tạo danh mục
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Tạo danh mục khóa học thất bại."
+ */
+router.post('/create-course-category', createCourseCategory);
 
 /**
  * @swagger
