@@ -47,7 +47,7 @@ const ViewCourse = ({ form }) => {
         </Info>
         <Hr />
         <Description dangerouslySetInnerHTML={{ __html: form.courseDescription || 'Chưa có mô tả khóa học' }}></Description>
-        <Hr style={{ marginBottom: '24px' }} />
+        <Hr style={{ display: sessionUser.userRole != 'Student' ? 'block' : 'none', marginBottom: '24px' }} />
     </>
   );
 };
