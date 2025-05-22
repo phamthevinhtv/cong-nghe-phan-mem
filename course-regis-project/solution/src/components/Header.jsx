@@ -1,4 +1,5 @@
 import axios from 'axios';
+import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -183,7 +184,7 @@ const NotifyItem = styled(Link)`
     display: block;
     padding: 8px;
     border-radius: 6px;
-    background-color: rgb(255, 240, 240);
+    background-color: #f5f5f5;
 
     &:hover {
         background-color: #f0f0f0;
@@ -196,6 +197,9 @@ const Header = () => {
     const location = useLocation();
     const [menuOpen, setMenuOpen] = useState(false);
     const [openNavBox, setOpenNavBox] = useState(null);
+    const [notifyNum, setNotifyNum] = useState(0);
+    const [coursesNotify, setCoursesNotify] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     const notifyRef = useRef();
     const accountRef = useRef();
@@ -218,11 +222,33 @@ const Header = () => {
             }
         };
 
+        getSoonToStartCourses();
+
         document.addEventListener('mousedown', handleClickOutside);
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, []);
+
+    const getSoonToStartCourses = async () => {
+        setIsLoading(true);
+        try {
+            const response = await axios.get(`http://localhost:5000/api/course/soon-to-start-courses`, { withCredentials: true });
+            if (response.data.courses) {
+                setCoursesNotify(response.data.courses);
+                setNotifyNum(response.data.courses.length);
+            } else {
+                setCoursesNotify([]);
+                setNotifyNum(0);
+            }
+        } catch (err) {
+            console.error('Lỗi khi lấy danh mục khóa học:', err);
+            setCoursesNotify([]);
+            setNotifyNum(0);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const handleLogout = async () => {
         try {
@@ -242,41 +268,34 @@ const Header = () => {
                 <Logo src={logo} onClick={() => navigate('/home')} />
                 <NavContainer>
                     <div ref={notifyRef} style={{ position: 'relative' }}>
-                        <Nav onClick={() => setOpenNavBox(openNavBox === 'notify' ? null : 'notify')}
-                        style={{ backgroundColor: openNavBox === 'notify' ? '#f0f0f0' : '#ffffff' }}>
+                        <Nav onClick={() => setOpenNavBox(openNavBox === 'notify' ? null : 'notify')} style={{ backgroundColor: openNavBox === 'notify' ? '#f0f0f0' : '#ffffff' }}>
                             <NavIcon src={notifyIcon} />
                             <NavText>Thông báo</NavText>
-                            <NotifyNum>3</NotifyNum>
+                            {notifyNum > 0 && <NotifyNum>{notifyNum}</NotifyNum>}
                         </Nav>
                         {openNavBox === 'notify' && (
                             <NavBox style={{ minWidth: '400px' }}>
-                                <p style={{
-                                    textAlign: 'center',
-                                    paddingBottom: '12px',
-                                    borderBottom: 'var(--border-normal)'
-                                }}>
-                                    Thông báo mới nhất
-                                </p>
-                                <NotifyList>
-                                    <NotifyItem>Khóa học sắp bắt đầu</NotifyItem>
-                                    <NotifyItem>Khóa học sắp bắt đầu</NotifyItem>
-                                    <NotifyItem>Khóa học sắp bắt đầu</NotifyItem>
-                                </NotifyList>
-                                <Link hoverColor='var(--primary-color)' style={{
-                                    textAlign: 'center',
-                                    borderTop: 'var(--border-normal)',
-                                    borderRadius: '0 0 6px 6px',
-                                    display: 'block',
-                                    paddingTop: '12px'
-                                }}>
-                                    Xem tất cả
-                                </Link>
+                                <p style={{ textAlign: 'center', paddingBottom: '12px', borderBottom: 'var(--border-normal)'}}>Thông báo mới nhất</p>
+                                {isLoading ? (<p style={{ padding: '8px', textAlign: 'center' }}>Đang tải...</p>
+                                ) : (
+                                    <NotifyList>
+                                        {coursesNotify.length === 0 ? (
+                                            <p style={{ padding: '8px' }}>Không có thông báo.</p>
+                                        ) : (
+                                            coursesNotify.map((course) => (
+                                                <NotifyItem key={course.id} onClick={() => {localStorage.setItem('selectedCourse', JSON.stringify(course)); navigate('/course-detail'); }}>
+                                                    Khóa học "{course.courseName}" sẽ bắt đầu vào{' '} {course.daysUntilStart === 0 ? 'hôm nay' : `ngày ${dayjs(course.courseStartDate).format('DD/MM/YYYY')}, còn lại ${course.daysUntilStart} ngày.`}
+                                                </NotifyItem>
+                                            ))
+                                        )}
+                                    </NotifyList>
+                                )}
+                                <Link hoverColor="var(--primary-color)" to="/notifications" style={{ textAlign: 'center', borderTop: 'var(--border-normal)', borderRadius: '0 0 6px 6px', display: 'block', paddingTop: '12px' }}>Xem tất cả</Link>
                             </NavBox>
                         )}
                     </div>
                     <div ref={accountRef} style={{ position: 'relative' }}>
-                        <Nav onClick={() => setOpenNavBox(openNavBox === 'account' ? null : 'account')}
-                        style={{ backgroundColor: openNavBox === 'account' ? '#f0f0f0' : '#ffffff' }}>
+                        <Nav onClick={() => setOpenNavBox(openNavBox === 'account' ? null : 'account')} style={{ backgroundColor: openNavBox === 'account' ? '#f0f0f0' : '#ffffff' }}>
                             <NavIcon src={accountIcon} />
                             <NavText>{sessionUser?.userFullName}</NavText>
                         </Nav>
@@ -301,7 +320,7 @@ const Header = () => {
                         Trang chủ
                     </MenuLink>
                     <MenuLink to="/notifications" $active={location.pathname === '/notifications'}>
-                        Thông báo <NotifyNumMenu>(3)</NotifyNumMenu>
+                        Thông báo <NotifyNumMenu>({notifyNum})</NotifyNumMenu>
                     </MenuLink>
                     <MenuLink to="/profile" $active={location.pathname === '/profile'}>
                         Cá nhân

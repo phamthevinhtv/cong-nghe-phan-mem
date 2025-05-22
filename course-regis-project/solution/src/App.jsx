@@ -1,16 +1,17 @@
+import axios from 'axios';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import styled, { keyframes } from 'styled-components';
 import './App.css';
+import CourseDetail from './pages/CourseDetail';
+import CreateCourse from './pages/CreateCourse';
 import ForgotPassword from './pages/ForgotPassword';
 import Home from './pages/Home';
 import Login from './pages/Login';
-import Register from './pages/Register';
+import Notification from './pages/Notification';
 import Profile from './pages/Profile';
-import CreateCourse from './pages/CreateCourse';
-import CourseDetail from './pages/CourseDetail';
+import Register from './pages/Register';
 import StudentsErolled from './pages/StudentsErolled';
-import { useState, useEffect, createContext, useContext } from 'react';
-import axios from 'axios';
-import styled, { keyframes } from 'styled-components';
 
 const WrapperWait = styled.div`
   width: 100vw;
@@ -110,6 +111,7 @@ function App() {
           <Route path="/profile" element={sessionUser ? <Profile /> : <Navigate to="/login" />} />
           <Route path="/create-course" element={sessionUser && sessionUser.userRole != 'Student' ? <CreateCourse /> : <Navigate to="/login" />} />
           <Route path="/course-detail" element={sessionUser ? <CourseDetail /> : <Navigate to="/login" />} />
+          <Route path="/notifications" element={sessionUser ? <Notification /> : <Navigate to="/login" />} />
           <Route path="/students-enrolled" element={sessionUser && sessionUser.userRole != 'Student' ? <StudentsErolled /> : <Navigate to="/login" />} />
         </Routes>
       </BrowserRouter>
