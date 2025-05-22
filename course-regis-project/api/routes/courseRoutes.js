@@ -317,6 +317,82 @@ router.get('/course-categories', getCourseCategories);
 
 /**
  * @swagger
+ * /api/course/soon-to-start:
+ *   get:
+ *     summary: Lấy danh sách các khóa học sắp bắt đầu trong 3 ngày tới (cần đăng nhập)
+ *     tags:
+ *       - Khóa học
+ *     responses:
+ *       200:
+ *         description: Lấy danh sách khóa học sắp bắt đầu thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 courses:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       courseId:
+ *                         type: string
+ *                         example: "COURSE001"
+ *                       courseName:
+ *                         type: string
+ *                         example: "Lập trình Node.js"
+ *                       courseStartDate:
+ *                         type: string
+ *                         format: date
+ *                         example: "2025-05-23"
+ *                       daysUntilStart:
+ *                         type: integer
+ *                         example: 2
+ *       401:
+ *         description: Người dùng chưa đăng nhập
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Cần đăng nhập để có quyền truy cập."
+ *       403:
+ *         description: Người dùng không có quyền truy cập
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Tài khoản này không có quyền truy cập."
+ *       404:
+ *         description: Không tìm thấy khóa học nào sắp bắt đầu
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Khóa học không tồn tại."
+ *       500:
+ *         description: Lỗi phía máy chủ khi lấy danh sách khóa học
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Tìm khóa học thất bại."
+ */
+router.get('/soon-to-start-courses', getSoonToStartCourses);
+
+/**
+ * @swagger
  * /api/course/{courseId}:
  *   put:
  *     summary: Cập nhật thông tin khóa học (cần đăng nhập)

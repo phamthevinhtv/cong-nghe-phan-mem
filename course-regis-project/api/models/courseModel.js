@@ -1,4 +1,4 @@
-const { getConnection, closeConnection } = require('../config/database');
+const { createCourse, getCourse, getCourses, updateCourse, deleteCourse, enrollmentCourse, cancelEnrollmentCourse, getStudentsEnrolled, createCourseCategory, getCourseCategories, getSoonToStartCourses } = require('../controllers/courseController');
 const nanoid = require('nanoid').nanoid;
 
 const createCourseDB = async (courseData) => {
@@ -205,6 +205,22 @@ const findCourseCategories = async () => {
     }
 };
 
+const findCoursesWithinDays = async () => {
+    let connection;
+    try {
+        connection = await getConnection();
+        const query = `SELECT c.courseId, c.courseName, c.courseStartDate, DATEDIFF(c.courseStartDate, CURRENT_DATE) AS daysUntilStart, c.courseStatus, 
+        c.userId, e1.userId AS studentId FROM courses c LEFT JOIN enrollments e1 ON e1.courseId = c.courseId WHERE c.courseStartDate >= CURRENT_DATE AND 
+        DATEDIFF(c.courseStartDate, CURRENT_DATE) <= 3 ORDER BY daysUntilStart ASC`;
+        const [rows] = await connection.query(query);
+        return rows.length > 0 ? rows : [];
+    } catch (err) {
+        throw err;
+    } finally {
+        await closeConnection(connection);
+    }
+};
+
 module.exports = {
     createCourseDB,
     findCourseByName,
@@ -218,5 +234,6 @@ module.exports = {
     findCourseCategoryByName,
     createCourseCategoryDB,
     findCourseCategories,
-    findCourseByIdAndStudentId
+    findCourseByIdAndStudentId,
+    findCoursesWithinDays
 };

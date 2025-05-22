@@ -1,4 +1,4 @@
-const { createCourseDB, findCourseByName, findCourseById, findCourses, updateCourseDB, deleteCourseDB, createEnrollment, updateEnrollmentStatus, findStudentsByCourseId, findCourseCategoryByName, createCourseCategoryDB, findCourseCategories, findCourseByIdAndStudentId } = require('../models/courseModel');
+const { createCourseDB, findCourseByName, findCourseById, findCourses, updateCourseDB, deleteCourseDB, createEnrollment, updateEnrollmentStatus, findStudentsByCourseId, findCourseCategoryByName, createCourseCategoryDB, findCourseCategories, findCourseByIdAndStudentId, findCoursesWithinDays } = require('../models/courseModel');
 const { findUserById } = require('../models/userModel');
 const dayjs = require('dayjs');
 
@@ -368,6 +368,44 @@ const getCourseCategories = async (req, res) => {
     }
 };
 
+const getSoonToStartCourses = async (req, res) => {
+    const currentUser = req.session.user;
+    if (!currentUser) {
+        return res.status(401).json({ message: 'Cần đăng nhập để có quyền truy cập.' });
+    }
+    if (currentUser.userRole != "Admin" && currentUser.userRole != "Instructor" && currentUser.userRole != "Student") {
+        return res.status(403).json({ message: 'Tài khoản này không có quyền truy cập.' });
+    }
+    try {
+        let courses = await findCoursesWithinDays();
+        if (courses.length <= 0) {
+            return res.status(404).json({ message: 'Khóa học không tồn tại.' });
+        }
+        if (currentUser.userRole == "Instructor") {
+            courses = courses.filter(course => course.userId == currentUser.userId);
+        } else if (currentUser.userRole == "Student") {
+            courses = courses.filter(course => course.courseStatus === 'Publish' && 
+                course.userId && course.studentId === currentUser.userId
+            );
+        }
+        courses = courses.map((course) => {
+            const formattedCourse = {
+                ...course,
+                courseStartDate: dayjs(course.courseStartDate).isValid() ? 
+                dayjs(course.courseStartDate).format('YYYY-MM-DD') : ''
+            };
+            delete formattedCourse.studentId;
+            delete formattedCourse.userId;
+            delete formattedCourse.courseStatus;
+            return formattedCourse;
+        });
+        res.status(200).json({ courses: courses });
+    } catch (err) {
+        res.status(500).json({ message: 'Tìm khóa học thất bại.' });
+        console.error(`Lỗi: ${err.message}`);
+    }
+};
+
 module.exports = {
     createCourse,
     getCourse,
@@ -378,5 +416,6 @@ module.exports = {
     cancelEnrollmentCourse,
     getStudentsEnrolled,
     createCourseCategory,
-    getCourseCategories
+    getCourseCategories,
+    getSoonToStartCourses
 };
