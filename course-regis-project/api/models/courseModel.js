@@ -1,4 +1,4 @@
-const { createCourse, getCourse, getCourses, updateCourse, deleteCourse, enrollmentCourse, cancelEnrollmentCourse, getStudentsEnrolled, createCourseCategory, getCourseCategories, getSoonToStartCourses } = require('../controllers/courseController');
+const { getConnection, closeConnection } = require('../config/database');
 const nanoid = require('nanoid').nanoid;
 
 const createCourseDB = async (courseData) => {
@@ -221,6 +221,36 @@ const findCoursesWithinDays = async () => {
     }
 };
 
+const updateEnrollmentStatusCompleted = async () => {
+  let connection;
+  try {
+    connection = await getConnection();
+    const querySelect = `SELECT e.enrollmentId, c.courseEndDate FROM enrollments e JOIN courses c ON e.courseId = c.courseId WHERE e.enrollmentStatus = 'Enrolled'`;
+    const [rows] = await connection.query(querySelect);
+    if (!rows.length) {
+      return;
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const toUpdate = rows
+      .filter(row => {
+        const courseEndDate = new Date(row.courseEndDate);
+        courseEndDate.setHours(0, 0, 0, 0);
+        return courseEndDate < today;
+      })
+      .map(row => row.enrollmentId);
+    if (toUpdate.length === 0) {
+      return;
+    }
+    const queryUpdate = `UPDATE enrollments SET enrollmentStatus = 'Completed' WHERE enrollmentId IN (?)`;
+    await connection.query(queryUpdate, [toUpdate]);
+  } catch (error) {
+    throw error;
+  } finally {
+    await closeConnection(connection);
+  }
+};
+
 module.exports = {
     createCourseDB,
     findCourseByName,
@@ -235,5 +265,6 @@ module.exports = {
     createCourseCategoryDB,
     findCourseCategories,
     findCourseByIdAndStudentId,
-    findCoursesWithinDays
+    findCoursesWithinDays,
+    updateEnrollmentStatusCompleted
 };

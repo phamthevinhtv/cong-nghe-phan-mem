@@ -1,5 +1,5 @@
 const express = require('express');
-const { createCourse, getCourse, getCourses, updateCourse, deleteCourse, enrollmentCourse, cancelEnrollmentCourse, getStudentsEnrolled, createCourseCategory, getCourseCategories } = require('../controllers/courseController');
+const { createCourse, getCourse, getCourses, updateCourse, deleteCourse, enrollmentCourse, cancelEnrollmentCourse, getStudentsEnrolled, createCourseCategory, getCourseCategories, getSoonToStartCourses } = require('../controllers/courseController');
 const router = express.Router();
 
 /**

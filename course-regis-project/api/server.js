@@ -8,6 +8,7 @@ const swaggerDocs = require('./config/swagger');
 const authRoutes = require('./routes/authRoutes')
 const userRoutes = require('./routes/userRoutes')
 const courseRoutes = require('./routes/courseRoutes')
+require('./utils/cronJobs');
 
 app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(express.json());
