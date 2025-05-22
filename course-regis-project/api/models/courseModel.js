@@ -36,12 +36,29 @@ const findCourseById = async (courseId) => {
     let connection;
     try {
         connection = await getConnection();
+        const query = `SELECT c.courseId, c.courseCategoryId, cct.courseCategoryName, c.courseName, c.courseDescription, c.courseStartDate, 
+        c.courseEndDate, c.courseMaxStudent, c.coursePrice, c.courseStatus, c.courseCreatedAt, c.courseUpdatedAt, c.userId, u.userFullName 
+        FROM courses c LEFT JOIN users AS u ON u.userId = c.userId LEFT JOIN courseCategories AS cct ON cct.courseCategoryId = c.courseCategoryId 
+        WHERE c.courseId = ?`;
+        const [rows] = await connection.query(query, [courseId]);
+        return rows.length > 0 ? rows[0] : null;
+    } catch (err) {
+        throw err;
+    } finally {
+        await closeConnection(connection);
+    }
+};
+
+const findCourseByIdAndStudentId = async (courseId, studentId) => {
+    let connection;
+    try {
+        connection = await getConnection();
         const query = `SELECT c.courseId, c.courseCategoryId, cct.courseCategoryName, c.courseName, c.courseDescription, c.courseStartDate,
         c.courseEndDate, c.courseMaxStudent, c.coursePrice, c.courseStatus, c.courseCreatedAt, c.courseUpdatedAt, c.userId, u.userFullName, 
         e1.enrollmentStatus, (SELECT COUNT(*) FROM enrollments e WHERE e.courseId = c.courseId AND e.enrollmentStatus IN ('Enrolled', 'Completed')) 
         AS totalEnrollments, e1.userId AS studentId FROM courses AS c LEFT JOIN users AS u ON u.userId = c.userId LEFT JOIN courseCategories AS cct ON 
-        cct.courseCategoryId = c.courseCategoryId LEFT JOIN enrollments e1 ON e1.courseId = c.courseId WHERE c.courseId = ?`;
-        const [rows] = await connection.query(query, [courseId]);
+        cct.courseCategoryId = c.courseCategoryId LEFT JOIN enrollments e1 ON e1.courseId = c.courseId WHERE c.courseId = ? AND e1.userId = ?`;
+        const [rows] = await connection.query(query, [courseId, studentId]);
         return rows.length > 0 ? rows[0] : null;
     } catch (err) {
         throw err;
@@ -54,7 +71,7 @@ const findCourses = async () => {
     let connection;
     try {
         connection = await getConnection();
-        const query = `SELECT c.courseId,  c.userId, c.courseName, c.courseStartDate, c.courseEndDate, c.coursePrice, c.courseStatus, 
+        const query = `SELECT c.courseId, c.courseCategoryId,  c.userId, c.courseName, c.courseStartDate, c.courseEndDate, c.coursePrice, c.courseStatus, 
         (SELECT COUNT(*) FROM enrollments e WHERE e.courseId = c.courseId AND e.enrollmentStatus IN ('Enrolled', 'Completed')) 
         AS totalEnrollments, u.userFullName, c.courseMaxStudent, e1.userId AS studentId, e1.enrollmentStatus FROM courses AS c 
         LEFT JOIN users u ON c.userId = u.userId LEFT JOIN enrollments e1 ON e1.courseId = c.courseId`;
@@ -118,7 +135,6 @@ const updateEnrollmentStatus = async (studentId, courseId, status) => {
     let connection;
     try {
         connection = await getConnection();
-        const enrollmentId = nanoid(20);
         const query = 'UPDATE enrollments SET enrollmentStatus = ? WHERE userId = ? AND courseId = ?';
         const values = [status, studentId, courseId];
         const [result] = await connection.query(query, values);
@@ -135,8 +151,7 @@ const findStudentsByCourseId = async (courseId) => {
     try {
         connection = await getConnection();
         const query = `SELECT u.userId, u.userFullName, u.userEmail, u.userGender, u.userPhoneNumber, u.userAddress 
-        FROM users u JOIN enrollments e ON u.userId = e.userId WHERE e.courseId = ? AND 
-        (e.enrollmentStatus = 'Enrolled' OR e.enrollmentStatus = 'Completed')`;
+        FROM users u JOIN enrollments e ON u.userId = e.userId WHERE e.courseId = ?`;
         const [rows] = await connection.query(query, [courseId]);
         return rows.length > 0 ? rows : [];
     } catch (err) {
@@ -202,5 +217,6 @@ module.exports = {
     findStudentsByCourseId,
     findCourseCategoryByName,
     createCourseCategoryDB,
-    findCourseCategories
+    findCourseCategories,
+    findCourseByIdAndStudentId
 };

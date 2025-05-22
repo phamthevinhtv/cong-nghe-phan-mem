@@ -1,4 +1,7 @@
-const { createCourseCategory } = require('../controllers/courseController');
+const {
+  createCourseCategory,
+} = require('../controllers/courseController');
+
 const courseModel = require('../models/courseModel');
 
 jest.mock('../models/courseModel');
@@ -9,7 +12,7 @@ describe('Unit test cho createCourseCategory', () => {
 
   beforeEach(() => {
     req = {
-      body: { courseCateName: 'Lập trình Web' },
+      body: { courseCategoryName: 'Frontend' },
       session: { user: { userRole: 'Admin' } },
     };
     res = {
@@ -25,16 +28,16 @@ describe('Unit test cho createCourseCategory', () => {
 
     await createCourseCategory(req, res);
 
-    expect(courseModel.findCourseCategoryByName).toHaveBeenCalledWith('Lập trình Web');
-    expect(courseModel.createCourseCategoryDB).toHaveBeenCalledWith('Lập trình Web');
+    expect(courseModel.findCourseCategoryByName).toHaveBeenCalledWith('Frontend');
+    expect(courseModel.createCourseCategoryDB).toHaveBeenCalledWith('Frontend');
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith({
       message: 'Tạo danh mục khóa học thành công.',
-      courseCateName: 'Lập trình Web',
+      courseCategoryName: 'Frontend',
     });
   });
 
-  it('Trả về lỗi nếu chưa đăng nhập', async () => {
+  it('Tạo danh mục bị từ chối nếu chưa đăng nhập', async () => {
     req.session.user = null;
 
     await createCourseCategory(req, res);
@@ -45,7 +48,7 @@ describe('Unit test cho createCourseCategory', () => {
     });
   });
 
-  it('Trả về lỗi nếu user không phải Admin hoặc Instructor', async () => {
+  it('Tạo danh mục bị từ chối nếu không phải Admin hoặc Instructor', async () => {
     req.session.user.userRole = 'Student';
 
     await createCourseCategory(req, res);
@@ -56,21 +59,20 @@ describe('Unit test cho createCourseCategory', () => {
     });
   });
 
-  it('Trả về lỗi nếu danh mục đã tồn tại', async () => {
-    courseModel.findCourseCategoryByName.mockResolvedValue({ courseCateName: 'Lập trình Web' });
+  it('Trả về lỗi nếu tên danh mục đã tồn tại', async () => {
+    courseModel.findCourseCategoryByName.mockResolvedValue({ id: '123', name: 'Frontend' });
 
     await createCourseCategory(req, res);
 
-    expect(courseModel.findCourseCategoryByName).toHaveBeenCalledWith('Lập trình Web');
+    expect(courseModel.findCourseCategoryByName).toHaveBeenCalledWith('Frontend');
     expect(res.status).toHaveBeenCalledWith(409);
     expect(res.json).toHaveBeenCalledWith({
       message: 'Tên danh mục khóa học đã tồn tại.',
     });
   });
 
-  it('Trả về lỗi server khi createCourseCategoryDB bị lỗi', async () => {
-    courseModel.findCourseCategoryByName.mockResolvedValue(null);
-    courseModel.createCourseCategoryDB.mockRejectedValue(new Error('DB error'));
+  it('Trả về lỗi server nếu có exception', async () => {
+    courseModel.findCourseCategoryByName.mockRejectedValue(new Error('DB lỗi'));
 
     await createCourseCategory(req, res);
 
