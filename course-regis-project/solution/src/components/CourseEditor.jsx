@@ -153,6 +153,39 @@ const CourseEditor = ({ form, setForm, mode, setIsView }) => {
       emptyInputWarning('courseName');
       return;
     }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (form.courseStartDate) {
+      const startDate = new Date(form.courseStartDate);
+      startDate.setHours(0, 0, 0, 0);
+      if (startDate.getTime() < today.getTime()) {
+        toast.warning('Ngày bắt đầu phải bằng hoặc sau ngày hiện tại.', { position: 'top-right', autoClose: 3000 });
+        emptyInputWarning('courseStartDate');
+        return;
+      }
+    }
+    if (form.courseEndDate) {
+      const endDate = new Date(form.courseEndDate);
+      endDate.setHours(0, 0, 0, 0);
+      if (endDate.getTime() < today.getTime()) {
+        toast.warning('Ngày kết thúc phải bằng hoặc sau ngày hiện tại.', { position: 'top-right', autoClose: 3000 });
+        emptyInputWarning('courseEndDate');
+        return;
+      }
+    }
+    if (form.courseStartDate && form.courseEndDate) {
+      const startDate = new Date(form.courseStartDate);
+      const endDate = new Date(form.courseEndDate);
+      startDate.setHours(0, 0, 0, 0);
+      endDate.setHours(0, 0, 0, 0);
+      if (startDate.getTime() > endDate.getTime()) {
+        toast.warning('Ngày bắt đầu phải bằng hoặc trước ngày kết thúc.', { position: 'top-right', autoClose: 3000 });
+        emptyInputWarning('courseStartDate');
+        emptyInputWarning('courseEndDate');
+        return;
+      }
+    }
     setWaitProcess(true);
     try {
         let response;
