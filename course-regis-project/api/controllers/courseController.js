@@ -1,4 +1,4 @@
-const { createCourseDB, findCourseByName, findCourseById, findCourses, updateCourseDB, deleteCourseDB, createEnrollment, updateEnrollmentStatus, findStudentsByCourseId, findCourseCategories, findCourseCategoryByName, createCourseCategoryDB } = require('../models/courseModel');
+const { createCourseDB, findCourseByName, findCourseById, findCourses, updateCourseDB, deleteCourseDB, createEnrollment, updateEnrollmentStatus, findStudentsByCourseId, findCourseCategoryByName, createCourseCategoryDB, findCourseCategories, findCourseByIdAndStudentId } = require('../models/courseModel');
 const { findUserById } = require('../models/userModel');
 const dayjs = require('dayjs');
 
@@ -79,7 +79,15 @@ const getCourses = async (req, res) => {
         if (currentUser.userRole == "Instructor") {
             courses = courses.filter(course => course.userId == currentUser.userId);
         } else if (currentUser.userRole == "Student") {
-            courses = courses.filter(course => (course.courseStatus == 'Publish' && course.userId) || course.studentId == currentUser.userId);
+            const currentDate = new Date();
+            courses = courses.filter(course => {
+                const courseStart = new Date(course.courseStartDate);
+                const threeDaysBeforeStart = new Date(courseStart);
+                threeDaysBeforeStart.setDate(courseStart.getDate() - 3);
+                return (course.courseStatus === 'Publish' && course.userId  
+                    && currentDate <= threeDaysBeforeStart) || 
+                course.studentId === currentUser.userId;
+            });
         }
         courses = courses.map((course) => ({
             ...course,
@@ -107,6 +115,8 @@ const updateCourse = async (req, res) => {
         const newCourse = {};
         let count = 0;
         const course = await findCourseById(courseId);
+        console.log(course);
+        
         if (!course) {
             return res.status(404).json({ message: 'Khóa học không tồn tại.' });
         }
@@ -279,8 +289,8 @@ const cancelEnrollmentCourse = async (req, res) => {
         studentId = currentUser.userId;
     }
     try {
-        const course = await findCourseById(courseId);
-        if (!course || (currentUser.userRole === "Student" && (course.studentId !== studentId || course.enrollmentStatus !== 'Enrolled'))) {
+        const course = await findCourseByIdAndStudentId(courseId, studentId);
+        if (!course || (currentUser.userRole === "Student" && course.enrollmentStatus !== 'Enrolled')) {
             return res.status(404).json({ message: 'Khóa học không tồn tại.' });
         }
         const student = await findUserById(studentId);
@@ -317,7 +327,7 @@ const getStudentsEnrolled = async (req, res) => {
 };
 
 const createCourseCategory = async (req, res) => {
-    const { courseCateName } = req.body;
+    const { courseCategoryName } = req.body;
     const currentUser = req.session.user;
     if (!currentUser) {
         return res.status(401).json({ message: 'Cần đăng nhập để có quyền truy cập.' });
@@ -326,12 +336,12 @@ const createCourseCategory = async (req, res) => {
         return res.status(403).json({ message: 'Tài khoản này không có quyền truy cập.' });
     }
     try {
-        const course = await findCourseCategoryByName(courseCateName);
+        const course = await findCourseCategoryByName(courseCategoryName);
         if (course) {
             return res.status(409).json({ message: 'Tên danh mục khóa học đã tồn tại.' });
         }
-        await createCourseCategoryDB(courseCateName);
-        res.status(201).json({ message: 'Tạo danh mục khóa học thành công.', courseCateName: courseCateName });
+        await createCourseCategoryDB(courseCategoryName);
+        res.status(201).json({ message: 'Tạo danh mục khóa học thành công.', courseCategoryName: courseCategoryName });
     } catch (err) {
         res.status(500).json({ message: 'Tạo danh mục khóa học thất bại.' });
         console.error(`Lỗi: ${err.message}`);
@@ -343,7 +353,7 @@ const getCourseCategories = async (req, res) => {
     if (!currentUser) {
         return res.status(401).json({ message: 'Cần đăng nhập để có quyền truy cập.' });
     }
-    if (currentUser.userRole != "Admin" && currentUser.userRole != "Instructor") {
+    if (currentUser.userRole != "Admin" && currentUser.userRole != "Instructor" && currentUser.userRole != "Student") {
         return res.status(403).json({ message: 'Tài khoản này không có quyền truy cập.' });
     }
     try {

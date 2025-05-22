@@ -34,13 +34,13 @@ describe('Kiểm thử chức năng cancelEnrollmentCourse', () => {
     });
 
     it('Phải hủy đăng ký khóa học thành công khi người dùng là Admin', async () => {
-        courseModel.findCourseById.mockResolvedValue(mockCourseData);
+        courseModel.findCourseByIdAndStudentId.mockResolvedValue(mockCourseData);
         userModel.findUserById.mockResolvedValue(mockUserData);
         courseModel.updateEnrollmentStatus.mockResolvedValue();
 
         await cancelEnrollmentCourse(req, res);
 
-        expect(courseModel.findCourseById).toHaveBeenCalledWith('COURSE123');
+        expect(courseModel.findCourseByIdAndStudentId).toHaveBeenCalledWith('COURSE123', 'USER123');
         expect(userModel.findUserById).toHaveBeenCalledWith('USER123');
         expect(courseModel.updateEnrollmentStatus).toHaveBeenCalledWith('USER123', 'COURSE123', 'Canceled');
         expect(res.status).toHaveBeenCalledWith(201);
@@ -51,13 +51,13 @@ describe('Kiểm thử chức năng cancelEnrollmentCourse', () => {
         req.session.user.userRole = 'Student';
         req.session.user.userId = 'USER123';
         req.body = { courseId: 'COURSE123' };
-        courseModel.findCourseById.mockResolvedValue(mockCourseData);
+        courseModel.findCourseByIdAndStudentId.mockResolvedValue(mockCourseData);
         userModel.findUserById.mockResolvedValue(mockUserData);
         courseModel.updateEnrollmentStatus.mockResolvedValue();
 
         await cancelEnrollmentCourse(req, res);
 
-        expect(courseModel.findCourseById).toHaveBeenCalledWith('COURSE123');
+        expect(courseModel.findCourseByIdAndStudentId).toHaveBeenCalledWith('COURSE123', 'USER123');
         expect(userModel.findUserById).toHaveBeenCalledWith('USER123');
         expect(courseModel.updateEnrollmentStatus).toHaveBeenCalledWith('USER123', 'COURSE123', 'Canceled');
         expect(res.status).toHaveBeenCalledWith(201);
@@ -83,11 +83,11 @@ describe('Kiểm thử chức năng cancelEnrollmentCourse', () => {
     });
 
     it('Phải trả về lỗi khi khóa học không tồn tại', async () => {
-        courseModel.findCourseById.mockResolvedValue(null);
+        courseModel.findCourseByIdAndStudentId.mockResolvedValue(null);
 
         await cancelEnrollmentCourse(req, res);
 
-        expect(courseModel.findCourseById).toHaveBeenCalledWith('COURSE123');
+        expect(courseModel.findCourseByIdAndStudentId).toHaveBeenCalledWith('COURSE123', 'USER123');
         expect(res.status).toHaveBeenCalledWith(404);
         expect(res.json).toHaveBeenCalledWith({ message: 'Khóa học không tồn tại.' });
     });
@@ -96,12 +96,12 @@ describe('Kiểm thử chức năng cancelEnrollmentCourse', () => {
         req.session.user.userRole = 'Student';
         req.session.user.userId = 'USER123';
         req.body = { courseId: 'COURSE123' };
-        courseModel.findCourseById.mockResolvedValue(mockCourseData);
+        courseModel.findCourseByIdAndStudentId.mockResolvedValue(mockCourseData);
         userModel.findUserById.mockResolvedValue(null);
 
         await cancelEnrollmentCourse(req, res);
 
-        expect(courseModel.findCourseById).toHaveBeenCalledWith('COURSE123');
+        expect(courseModel.findCourseByIdAndStudentId).toHaveBeenCalledWith('COURSE123', 'USER123');
         expect(userModel.findUserById).toHaveBeenCalledWith('USER123');
         expect(res.status).toHaveBeenCalledWith(404);
         expect(res.json).toHaveBeenCalledWith({ message: 'Học viên không tồn tại.' });
@@ -111,11 +111,11 @@ describe('Kiểm thử chức năng cancelEnrollmentCourse', () => {
         req.session.user.userRole = 'Student';
         req.session.user.userId = 'USER123';
         req.body = { courseId: 'COURSE123' };
-        courseModel.findCourseById.mockResolvedValue({ ...mockCourseData, enrollmentStatus: 'Canceled' });
+        courseModel.findCourseByIdAndStudentId.mockResolvedValue({ ...mockCourseData, enrollmentStatus: 'Canceled' });
 
         await cancelEnrollmentCourse(req, res);
 
-        expect(courseModel.findCourseById).toHaveBeenCalledWith('COURSE123');
+        expect(courseModel.findCourseByIdAndStudentId).toHaveBeenCalledWith('COURSE123', 'USER123');
         expect(res.status).toHaveBeenCalledWith(404);
         expect(res.json).toHaveBeenCalledWith({ message: 'Khóa học không tồn tại.' });
     });
@@ -124,13 +124,13 @@ describe('Kiểm thử chức năng cancelEnrollmentCourse', () => {
         req.session.user.userRole = 'Student';
         req.session.user.userId = 'USER123';
         req.body = { courseId: 'COURSE123' };
-        courseModel.findCourseById.mockResolvedValue(mockCourseData);
+        courseModel.findCourseByIdAndStudentId.mockResolvedValue(mockCourseData);
         userModel.findUserById.mockResolvedValue(mockUserData);
         courseModel.updateEnrollmentStatus.mockRejectedValue(new Error('Lỗi cơ sở dữ liệu'));
 
         await cancelEnrollmentCourse(req, res);
 
-        expect(courseModel.findCourseById).toHaveBeenCalledWith('COURSE123');
+        expect(courseModel.findCourseByIdAndStudentId).toHaveBeenCalledWith('COURSE123', 'USER123');
         expect(userModel.findUserById).toHaveBeenCalledWith('USER123');
         expect(courseModel.updateEnrollmentStatus).toHaveBeenCalledWith('USER123', 'COURSE123', 'Canceled');
         expect(res.status).toHaveBeenCalledWith(500);

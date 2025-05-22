@@ -18,8 +18,32 @@ describe('Unit test cho getCourseCategories', () => {
     jest.clearAllMocks();
   });
 
-  it('Lấy danh sách danh mục thành công', async () => {
+  it('Lấy danh sách danh mục thành công với Instructor', async () => {
     const mockCategories = [{ id: 1, name: 'Backend' }, { id: 2, name: 'Frontend' }];
+    courseModel.findCourseCategories.mockResolvedValue(mockCategories);
+
+    await getCourseCategories(req, res);
+
+    expect(courseModel.findCourseCategories).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({ courseCategories: mockCategories });
+  });
+
+  it('Lấy danh sách danh mục thành công với Student', async () => {
+    req.session.user.userRole = 'Student';
+    const mockCategories = [{ id: 1, name: 'AI' }];
+    courseModel.findCourseCategories.mockResolvedValue(mockCategories);
+
+    await getCourseCategories(req, res);
+
+    expect(courseModel.findCourseCategories).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({ courseCategories: mockCategories });
+  });
+
+  it('Lấy danh sách danh mục thành công với Admin', async () => {
+    req.session.user.userRole = 'Admin';
+    const mockCategories = [{ id: 1, name: 'DevOps' }];
     courseModel.findCourseCategories.mockResolvedValue(mockCategories);
 
     await getCourseCategories(req, res);
@@ -40,8 +64,8 @@ describe('Unit test cho getCourseCategories', () => {
     });
   });
 
-  it('Trả về lỗi nếu user không phải Admin hoặc Instructor', async () => {
-    req.session.user.userRole = 'Student';
+  it('Trả về lỗi nếu user không có quyền truy cập', async () => {
+    req.session.user.userRole = 'Guest'; // Vai trò không hợp lệ
 
     await getCourseCategories(req, res);
 
@@ -56,6 +80,7 @@ describe('Unit test cho getCourseCategories', () => {
 
     await getCourseCategories(req, res);
 
+    expect(courseModel.findCourseCategories).toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(404);
     expect(res.json).toHaveBeenCalledWith({
       message: 'Danh mục khóa học không tồn tại.',
@@ -67,6 +92,7 @@ describe('Unit test cho getCourseCategories', () => {
 
     await getCourseCategories(req, res);
 
+    expect(courseModel.findCourseCategories).toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({
       message: 'Tìm danh mục khóa học thất bại.',

@@ -1,16 +1,15 @@
+import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import styled from 'styled-components';
+import { useUser } from '../App';
 import accountIcon from '../assets/images/account.svg';
 import notifyIcon from '../assets/images/bell.svg';
 import burgerIcon from '../assets/images/burger.svg';
 import closeIcon from '../assets/images/close.svg';
 import logo from '../assets/images/logo.png';
-import Input from './Input';
 import Link from './Link';
-import { toast } from 'react-toastify';
-import axios from 'axios';
-import { useUser } from '../App';
 
 const Wrapper = styled.div`
     position: fixed;
@@ -40,7 +39,7 @@ const NavContainer = styled.div`
     display: flex;
     align-items: center;
 
-    @media (max-width: 720px) {
+    @media (max-width: 576px) {
         display: none;
     }
 `;
@@ -84,7 +83,7 @@ const BurgerIcon = styled.img`
     width: 32px;
     cursor: pointer;
 
-    @media (min-width: 720px) {
+    @media (min-width: 576px) {
         display: none;
     }
 `;
@@ -96,7 +95,7 @@ const BurgerMenu = styled.div`
     bottom: 0;
     width: 200px;
     background-color: var(--white-color);
-    transform: ${({ $isOpen }) => $isOpen ? 'translateX(0)' : 'translateX(100%)'};
+    transform: ${({ $isOpen }) => ($isOpen ? 'translateX(0)' : 'translateX(100%)')};
     transition: transform 0.1s linear;
     z-index: 11;
     padding: 11px 24px 10px 24px;
@@ -108,7 +107,7 @@ const Overlay = styled.div`
     right: 0;
     bottom: 0;
     left: 0;
-    background-color:rgba(0, 0, 0, 0.3);
+    background-color: rgba(0, 0, 0, 0.3);
     z-index: 10;
 `;
 
@@ -176,41 +175,18 @@ const NotifyList = styled.div`
     display: flex;
     flex-direction: column;
     gap: 1px;
+    max-height: 400px;
+    overflow-y: auto;
 `;
 
 const NotifyItem = styled(Link)`
     display: block;
     padding: 8px;
     border-radius: 6px;
-    background-color:rgb(255, 240, 240);
+    background-color: rgb(255, 240, 240);
 
     &:hover {
         background-color: #f0f0f0;
-    }
-`;
-
-const Search = styled.div`
-    display: flex;
-    align-items: center;
-    border: var(--border-normal);
-    border-radius: 6px;
-    flex: 1;
-    margin: 0 12px 0 24px;
-`;
-
-const ClearIcon = styled.div`
-    height: 100%;
-    border-radius: 0 6px 6px 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    
-    &:hover {
-        background-color: #f0f0f0;
-    }
-
-    img {
-        transform: scale(0.6);
     }
 `;
 
@@ -220,7 +196,6 @@ const Header = () => {
     const location = useLocation();
     const [menuOpen, setMenuOpen] = useState(false);
     const [openNavBox, setOpenNavBox] = useState(null);
-    const [searchValue, setSearchValue] = useState('');
 
     const notifyRef = useRef();
     const accountRef = useRef();
@@ -247,7 +222,7 @@ const Header = () => {
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [openNavBox]);
+    }, []);
 
     const handleLogout = async () => {
         try {
@@ -257,21 +232,14 @@ const Header = () => {
             localStorage.removeItem('selectedCourse');
         } catch (error) {
             console.log(error);
-            
             toast.error(error.response?.data?.message || 'Lỗi máy chủ.', { position: 'top-right', autoClose: 3000 });
-        } 
-    }
+        }
+    };
 
     return (
         <Wrapper>
             <Container>
                 <Logo src={logo} onClick={() => navigate('/home')} />
-                <Search>
-                    <Input style={{ border: 'none' }} placeholder='Tìm kiếm khóa học' value={searchValue} onChange={(e) => setSearchValue(e.target.value)} />
-                    <ClearIcon onClick={() => setSearchValue('')}>
-                        <img src={closeIcon} />
-                    </ClearIcon>
-                </Search>
                 <NavContainer>
                     <div ref={notifyRef} style={{ position: 'relative' }}>
                         <Nav onClick={() => setOpenNavBox(openNavBox === 'notify' ? null : 'notify')}
@@ -329,11 +297,15 @@ const Header = () => {
                     <CloseIcon src={closeIcon} onClick={() => setMenuOpen(false)} />
                 </BurgerMenuHeader>
                 <BurgerMenuBody>
-                    <MenuLink to="/home" $active={location.pathname === '/home'}>Trang chủ</MenuLink>
+                    <MenuLink to="/home" $active={location.pathname === '/home'}>
+                        Trang chủ
+                    </MenuLink>
                     <MenuLink to="/notifications" $active={location.pathname === '/notifications'}>
                         Thông báo <NotifyNumMenu>(3)</NotifyNumMenu>
                     </MenuLink>
-                    <MenuLink to="/profile" $active={location.pathname === '/profile'}>Cá nhân</MenuLink>
+                    <MenuLink to="/profile" $active={location.pathname === '/profile'}>
+                        Cá nhân
+                    </MenuLink>
                     <MenuLink onClick={handleLogout}>Đăng xuất</MenuLink>
                 </BurgerMenuBody>
             </BurgerMenu>
