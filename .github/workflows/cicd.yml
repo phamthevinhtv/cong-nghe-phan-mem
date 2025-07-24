@@ -1,73 +1,54 @@
-# name: CI/CD Pipeline
+name: CI/CD Pipeline
 
-# on:
-#   push:
-#     branches:
-#       - main
-#       - 'dev/features/*'
-#   pull_request:
-#     branches:
-#       - main
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
-# jobs:
-#   test:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout Repository
-#         uses: actions/checkout@v4
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-#       - name: Debug - Check directory after checkout
-#         run: ls -la
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
 
-#       - name: Setup Node.js
-#         uses: actions/setup-node@v4
-#         with:
-#           node-version: '20'
+      - name: Install backend dependencies
+        run: |
+          cd course_enrollment/backend
+          npm ci
 
-#       - name: Install Build Tools
-#         run: |
-#           sudo apt-get update
-#           sudo apt-get install -y build-essential python3 g++ make
+      - name: Run backend unit tests
+        run: |
+          cd course_enrollment/backend
+          npm test
+        env:
+          CI: true
 
-#       - name: Install Dependencies from Source
-#         run: |
-#           cd course-regis-project/api
-#           rm -rf node_modules package-lock.json
-#           npm cache clean --force
-#           npm install --build-from-source
+  docker:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-#       - name: Run Unit Tests
-#         run: |
-#           cd course-regis-project/api
-#           npx jest --passWithNoTests
-#         env:
-#           CI: true
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_ACCESS_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-#   deploy:
-#     needs: test
-#     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout Repository
-#         uses: actions/checkout@v4
+      - name: Build & Push Backend Image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/course-enrollment-backend:latest -f course_enrollment/backend/Dockerfile course_enrollment/backend
+          docker push ${{ secrets.DOCKER_USERNAME }}/course-enrollment-backend:latest
 
-#       - name: Debug - Check directory after checkout
-#         run: ls -la
-
-#       - name: Login to Docker Hub
-#         run: echo "${{ secrets.DOCKER_ACCESS_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
-#       - name: Build & Push API Image
-#         run: |
-#           docker build -t ${{ secrets.DOCKER_USERNAME }}/course-regis-api:latest -f course-regis-project/api/Dockerfile course-regis-project/api
-#           docker push ${{ secrets.DOCKER_USERNAME }}/course-regis-api:latest
-
-#       - name: Build & Push Solution Image
-#         run: |
-#           docker build -t ${{ secrets.DOCKER_USERNAME }}/course-regis-solution:latest -f course-regis-project/solution/Dockerfile course-regis-project/solution
-#           docker push ${{ secrets.DOCKER_USERNAME }}/course-regis-solution:latest
-
-#       - name: Build & Push MySQL Image
-#         run: |
-#           docker build -t ${{ secrets.DOCKER_USERNAME }}/course-regis-mysql:latest -f course-regis-project/mysql/Dockerfile course-regis-project/mysql
-#           docker push ${{ secrets.DOCKER_USERNAME }}/course-regis-mysql:latest
+      - name: Build & Push Frontend Image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/course-enrollment-frontend:latest -f course_enrollment/frontend/Dockerfile course_enrollment/frontend
+          docker push ${{ secrets.DOCKER_USERNAME }}/course-enrollment-frontend:latest
