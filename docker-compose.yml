@@ -1,0 +1,49 @@
+version: "3.8"
+services:
+  mysql:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: course_enrollment
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./course_enrollment/backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+
+  backend:
+    build: ./course_enrollment/backend
+    restart: always
+    environment:
+      DB_HOST: mysql
+      DB_USER: admin
+      DB_PASSWORD: password
+      DB_NAME: course_enrollment
+      DB_PORT: 3306
+      JWT_SECRET: 3e05a1f9-86ff-4171-bfaf-b37aa2b92570
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mysql
+
+  frontend:
+    build: ./course_enrollment/frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:
